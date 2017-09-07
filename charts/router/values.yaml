@@ -8,7 +8,7 @@ dhparam: ""
 # requests_cpu: "100m"
 # requests_memory: "50Mi"
 
-# Any custom router annotations(https://github.com/deis/router#annotations)
+# Any custom router annotations(https://github.com/deisthree/router#annotations)
 # which need to be applied can be specified as key-value pairs under "deployment_annotations"
 #deployment_annotations:
   #<example-key>: <example-value>
