@@ -193,6 +193,9 @@ http {
 		ssl_certificate /opt/router/ssl/default/default.crt;
 		ssl_certificate_key /opt/router/ssl/default/default.key;
 		{{ end }}
+		{{ if ne $routerConfig.ReferrerPolicy "" }}
+		add_header Referrer-Policy {{ $routerConfig.ReferrerPolicy }};
+		{{ end }}
 		server_name _;
 		location ~ ^/healthz/?$ {
 			access_log off;
@@ -275,6 +278,14 @@ http {
 			add_header X-Request-Id $request_id always;
 			add_header X-Correlation-Id $correlation_id always;
 			{{end}}
+
+			{{ if ne $appConfig.ReferrerPolicy "" }}
+			add_header Referrer-Policy {{ $appConfig.ReferrerPolicy }};
+			{{ else }}
+			{{ if ne $routerConfig.ReferrerPolicy "" }}
+			add_header Referrer-Policy {{ $routerConfig.ReferrerPolicy }};
+			{{ end }}
+			{{ end }}
 
 			{{ if $appConfig.Maintenance }}return 503;{{ else if $appConfig.Available }}
 			proxy_buffering {{ if $appConfig.Nginx.ProxyBuffersConfig.Enabled }}on{{ else }}off{{ end }};

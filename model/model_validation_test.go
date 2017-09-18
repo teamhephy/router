@@ -159,6 +159,14 @@ func TestInvalidHTTP2Enabled(t *testing.T) {
 	testInvalidValues(t, newTestRouterConfig, "HTTP2Enabled", "http2Enabled", []string{"0", "-1", "foobar"})
 }
 
+func TestValidReferrerPolicy(t *testing.T) {
+	testValidValues(t, newTestRouterConfig, "ReferrerPolicy", "referrerPolicy", []string{"no-referrer", "no-referrer-when-downgrade", "origin", "origin-when-cross-origin", "same-origin", "strict-origin", "strict-origin-when-cross-origin", "unsafe-url", ""})
+}
+
+func TestInvalidReferrerPolicy(t *testing.T) {
+	testInvalidValues(t, newTestRouterConfig, "ReferrerPolicy", "referrerPolicy", []string{"0", "-1", "foobar"})
+}
+
 func TestInvalidGzipEnabled(t *testing.T) {
 	testInvalidValues(t, newTestGzipConfig, "Enabled", "enabled", []string{"0", "-1", "foobar"})
 }
@@ -253,6 +261,14 @@ func TestInvalidCertMappings(t *testing.T) {
 
 func TestValidCertMappings(t *testing.T) {
 	testValidValues(t, newTestAppConfig, "CertMappings", "certificates", []string{"foobar.com:foobar,*.foobar.deis.ninja:foobar-deis-ninja"})
+}
+
+func TestValidAppReferrerPolicy(t *testing.T) {
+	testValidValues(t, newTestAppConfig, "ReferrerPolicy", "referrerPolicy", []string{"no-referrer", "no-referrer-when-downgrade", "origin", "origin-when-cross-origin", "same-origin", "strict-origin", "strict-origin-when-cross-origin", "unsafe-url", ""})
+}
+
+func TestInvalidAppReferrerPolicy(t *testing.T) {
+	testInvalidValues(t, newTestAppConfig, "ReferrerPolicy", "referrerPolicy", []string{"0", "-1", "foobar"})
 }
 
 func TestInvalidBuilderConnectTimeout(t *testing.T) {
