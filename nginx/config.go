@@ -279,13 +279,8 @@ http {
 			add_header X-Correlation-Id $correlation_id always;
 			{{end}}
 
-			{{ if ne $appConfig.ReferrerPolicy "" }}
-			add_header Referrer-Policy {{ $appConfig.ReferrerPolicy }};
-			{{ else }}
-			{{ if ne $routerConfig.ReferrerPolicy "" }}
-			add_header Referrer-Policy {{ $routerConfig.ReferrerPolicy }};
-			{{ end }}
-			{{ end }}
+			{{ if (and (ne $appConfig.ReferrerPolicy "")  (ne $appConfig.ReferrerPolicy "none")) }}add_header Referrer-Policy {{ $appConfig.ReferrerPolicy }};
+			{{ else if (and (ne $routerConfig.ReferrerPolicy "") (and (ne $appConfig.ReferrerPolicy "none") (ne $routerConfig.ReferrerPolicy "none"))) }}add_header Referrer-Policy {{ $routerConfig.ReferrerPolicy }};{{ end }}
 
 			{{ if $appConfig.Maintenance }}return 503;{{ else if $appConfig.Available }}
 			proxy_buffering {{ if $appConfig.Nginx.ProxyBuffersConfig.Enabled }}on{{ else }}off{{ end }};

@@ -71,7 +71,7 @@ type RouterConfig struct {
 	HTTP2Enabled             bool                `key:"http2Enabled" constraint:"(?i)^(true|false)$"`
 	LogFormat                string              `key:"logFormat"`
 	ProxyBuffersConfig       *ProxyBuffersConfig `key:"proxyBuffers"`
-	ReferrerPolicy           string              `key:"referrerPolicy" constraint:"^(|no-referrer|no-referrer-when-downgrade|origin|origin-when-cross-origin|same-origin|strict-origin|strict-origin-when-cross-origin|unsafe-url)$"`
+	ReferrerPolicy           string              `key:"referrerPolicy" constraint:"^(no-referrer|no-referrer-when-downgrade|origin|origin-when-cross-origin|same-origin|strict-origin|strict-origin-when-cross-origin|unsafe-url|none)$"`
 }
 
 func newRouterConfig() (*RouterConfig, error) {
@@ -150,7 +150,7 @@ type AppConfig struct {
 	Certificates   map[string]*Certificate
 	Available      bool
 	Maintenance    bool            `key:"maintenance" constraint:"(?i)^(true|false)$"`
-	ReferrerPolicy string          `key:"referrerPolicy" constraint:"^(|no-referrer|no-referrer-when-downgrade|origin|origin-when-cross-origin|same-origin|strict-origin|strict-origin-when-cross-origin|unsafe-url)$"`
+	ReferrerPolicy string          `key:"referrerPolicy" constraint:"^(no-referrer|no-referrer-when-downgrade|origin|origin-when-cross-origin|same-origin|strict-origin|strict-origin-when-cross-origin|unsafe-url|none)$"`
 	SSLConfig      *SSLConfig      `key:"ssl"`
 	Nginx          *NginxAppConfig `key:"nginx"`
 }
