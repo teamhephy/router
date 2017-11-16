@@ -1,5 +1,5 @@
 name: examples
-home: https://github.com/deisthree/router
+home: https://github.com/teamhephy/router
 version: <Will be populated by the ci before publishing the chart>
 description: Standalone examples for Deis Router.
 maintainers:
