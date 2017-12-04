@@ -1,5 +1,5 @@
 
-# Deis Router v2
+# Hephy Router v2
 
 [![Build Status](https://ci.deis.io/job/router/badge/icon)](https://ci.deis.io/job/router)
 [![codecov.io](https://codecov.io/github/deis/router/coverage.svg?branch=master)](https://codecov.io/github/deis/router?branch=master)
@@ -530,7 +530,7 @@ The Helm [chart][] available for installing router (either with or without the r
 
 * __Do you need to scale the router?__ For greater availability, it's desirable to run more than one instance of the router.  _How many_ can only be informed by stress/performance testing the applications in your cluster.  To increase the number of router instances from the default of one, increase the number of replicas specified by the `deis-router` deployment object.  Do not specify a number of replicas greater than the number of worker nodes in your Kubernetes cluster.
 
-[issues]: https://github.com/deisthree/router/issues
-[prs]: https://github.com/deisthree/router/pulls
-[chart]: https://github.com/deisthree/router/tree/master/charts/router
-[v2.18]: https://github.com/deisthree/workflow/releases/tag/v2.18.0
+[issues]: https://github.com/teamhephy/router/issues
+[prs]: https://github.com/teamhephy/router/pulls
+[chart]: https://github.com/teamhephy/router/tree/master/charts/router
+[v2.18]: https://github.com/teamhephy/workflow/releases/tag/v2.18.0
