@@ -71,6 +71,22 @@ func TestValidBodySize(t *testing.T) {
 	testValidValues(t, newTestRouterConfig, "BodySize", "bodySize", []string{"1", "2", "20", "1k", "2k", "10m", "10M"})
 }
 
+func TestInvalidLargeHeaderBuffersCount(t *testing.T) {
+	testInvalidValues(t, newTestRouterConfig, "LargeHeaderBuffersCount", "largeHeaderBuffersCount", []string{"0", "-1", "foobar"})
+}
+
+func TestValidLargeHeaderBuffersCount(t *testing.T) {
+	testValidValues(t, newTestRouterConfig, "LargeHeaderBuffersCount", "largeHeaderBuffersCount", []string{"1", "2", "4", "8", "16", "32"})
+}
+
+func TestInvalidLargeHeaderBuffersSize(t *testing.T) {
+	testInvalidValues(t, newTestRouterConfig, "LargeHeaderBuffersSize", "largeHeaderBuffersSize", []string{"-1", "foobar"})
+}
+
+func TestValidLargeHeaderBuffersSize(t *testing.T) {
+	testValidValues(t, newTestRouterConfig, "LargeHeaderBuffersSize", "largeHeaderBuffersSize", []string{"1", "2", "20", "1k", "2k", "10m", "10M"})
+}
+
 func TestInvalidProxyRealIPCIDRs(t *testing.T) {
 	testInvalidValues(t, newTestRouterConfig, "ProxyRealIPCIDRs", "proxyRealIpCidrs", []string{"0", "-1", "foobar"})
 }
