@@ -32,6 +32,9 @@ func Reload() error {
 	if err := cmd.Start(); err != nil {
 		return err
 	}
+	if err := cmd.Wait(); err != nil {
+		return err
+	}
 	log.Println("INFO: nginx reloaded.")
 	return nil
 }
