@@ -218,7 +218,7 @@ http {
 
 	{{range $appConfig := $routerConfig.AppConfigs}}{{range $domain := $appConfig.Domains}}server {
 		listen 8080{{ if $routerConfig.UseProxyProtocol }} proxy_protocol{{ end }};
-		server_name {{ if contains "." $domain }}{{ $domain }}{{ else if ne $routerConfig.PlatformDomain "" }}{{ $domain }}.{{ $routerConfig.PlatformDomain }}{{ else }}~^{{ $domain }}\.(?<domain>.+)${{ end }};
+		server_name {{ if and $routerConfig.EnableRegexDomains (contains $domain $appConfig.RegexDomain)}}~^{{$domain}}\.(?<domain>.+)$ ~^{{$appConfig.RegexDomain}}\.(?<domain>.+)${{ else if contains "." $domain }}{{ $domain }}{{ else if ne $routerConfig.PlatformDomain "" }}{{ $domain }}.{{ $routerConfig.PlatformDomain }}{{ else }}~^{{ $domain }}\.(?<domain>.+)${{ end }};
 		server_name_in_redirect off;
 		port_in_redirect off;
 		set $app_name "{{ $appConfig.Name }}";
