@@ -47,6 +47,7 @@ http {
 	gzip_vary {{ $gzipConfig.Vary }};{{ end }}
 
 	client_max_body_size {{ $routerConfig.BodySize }};
+	large_client_header_buffers {{ $routerConfig.LargeHeaderBuffersCount }} {{ $routerConfig.LargeHeaderBuffersSize }};
 
 	{{ if $routerConfig.DisableServerTokens -}}
 	server_tokens off;

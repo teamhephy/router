@@ -46,6 +46,8 @@ type RouterConfig struct {
 	ServerNameHashBucketSize string      `key:"serverNameHashBucketSize" constraint:"^[1-9]\\d*[kKmM]?$"`
 	GzipConfig               *GzipConfig `key:"gzip"`
 	BodySize                 string      `key:"bodySize" constraint:"^[0-9]\\d*[kKmM]?$"`
+	LargeHeaderBuffersCount  string      `key:"largeHeaderBuffersCount" constraint:"^[1-9]\\d*$"`
+	LargeHeaderBuffersSize   string      `key:"largeHeaderBuffersSize" constraint:"^[0-9]\\d*[kKmM]?$"`
 	ProxyRealIPCIDRs         []string    `key:"proxyRealIpCidrs" constraint:"^((([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\\/([0-9]|[1-2][0-9]|3[0-2]))?(\\s*,\\s*)?)+$"`
 	ErrorLogLevel            string      `key:"errorLogLevel" constraint:"^(debug|info|notice|warn|error|crit|alert|emerg)$"`
 	PlatformDomain           string      `key:"platformDomain" constraint:"(?i)^([a-z0-9]+(-[a-z0-9]+)*\\.)+[a-z0-9]+(-*[a-z0-9]+)+$"`
@@ -81,6 +83,8 @@ func newRouterConfig() (*RouterConfig, error) {
 		ServerNameHashBucketSize: "64",
 		GzipConfig:               newGzipConfig(),
 		BodySize:                 "1m",
+		LargeHeaderBuffersCount:  "4",
+		LargeHeaderBuffersSize:   "32k",
 		ProxyRealIPCIDRs:         []string{"10.0.0.0/8"},
 		DisableServerTokens:      false,
 		ErrorLogLevel:            "error",
