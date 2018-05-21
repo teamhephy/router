@@ -45,6 +45,12 @@ RUN buildDeps='gcc make libgeoip-dev libssl-dev libpcre3-dev'; \
     make && \
     make install && \
     rm -rf "$BUILD_PATH" && \
+    # include tcell dynamic nginx module
+    mkdir "$PREFIX/modules" && \
+    cd "$PREFIX/modules" && \
+    get_src 8c535a2e526a9684afca6c227dc2115eb06681c48103541b97c73716da9f0cf5 "https://s3.amazonaws.com/hephy-artifacts/hephy-router/nginx_tcellagent-1.0.7-agentonly-zuora-linux-x86_64.tar.gz" && \
+    mv "$PREFIX/modules/nginx_tcellagent-1.0.7-agentonly-zuora-linux-x86_64/ubuntu/xenial/nginx-1.13.7-custom_flags_ssl_1.0.2g/ngx_http_tcell_agent_module.so" . && \
+    rm -rf "$PREFIX/modules/nginx_tcellagent-1.0.7-agentonly-zuora-linux-x86_64" && \
     # cleanup
     apt-get purge -y --auto-remove $buildDeps && \
     apt-get autoremove -y && \
