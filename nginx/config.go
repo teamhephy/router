@@ -21,6 +21,11 @@ worker_processes {{ $routerConfig.WorkerProcesses }};
 load_module modules/ngx_http_tcell_agent_module.so;
 {{- end }}
 
+{{ if $routerConfig.LoadModsecurityModule -}}
+# Loading the Modsecurity connector nginx dynamic module
+load_module modules/ngx_http_modsecurity_module.so;
+{{- end }}
+
 events {
 	worker_connections {{ $routerConfig.MaxWorkerConnections }};
 	# multi_accept on;
@@ -235,6 +240,12 @@ http {
 
 		{{ if and $routerConfig.LoadTcellModule $appConfig.TcellAppID -}}
 		tcell_app_id {{ $appConfig.TcellAppID }};
+		{{- end }}
+
+		{{ if $routerConfig.LoadModsecurityModule -}}
+		# Turning on modsecurity if modsecurity module loaded
+		modsecurity on;
+		modsecurity_rules_file /opt/router/conf/modsecurity.conf;
 		{{- end }}
 
 		{{ if index $appConfig.Certificates $domain }}
