@@ -16,6 +16,16 @@ const (
 pid /tmp/nginx.pid;
 worker_processes {{ $routerConfig.WorkerProcesses }};
 
+{{ if $routerConfig.LoadTcellModule -}}
+# Loading the Tcell nginx dynamic module
+load_module modules/ngx_http_tcell_agent_module.so;
+{{- end }}
+
+{{ if $routerConfig.LoadModsecurityModule -}}
+# Loading the Modsecurity connector nginx dynamic module
+load_module modules/ngx_http_modsecurity_module.so;
+{{- end }}
+
 events {
 	worker_connections {{ $routerConfig.MaxWorkerConnections }};
 	# multi_accept on;
@@ -28,6 +38,11 @@ http {
 	tcp_nodelay on;
 
 	vhost_traffic_status_zone shared:vhost_traffic_status:{{ $routerConfig.TrafficStatusZoneSize }};
+
+	{{ if and $routerConfig.LoadTcellModule $routerConfig.GlobalTcellAppID -}}
+	# Including the global Tcell AppID
+	tcell_app_id {{ $routerConfig.GlobalTcellAppID }};
+	{{- end }}
 
 	# The timeout value must be greater than the front facing load balancers timeout value.
 	# Default is the deis recommended timeout value for ELB - 1200 seconds + 100s extra.
@@ -222,6 +237,16 @@ http {
 		server_name_in_redirect off;
 		port_in_redirect off;
 		set $app_name "{{ $appConfig.Name }}";
+
+		{{ if and $routerConfig.LoadTcellModule $appConfig.TcellAppID -}}
+		tcell_app_id {{ $appConfig.TcellAppID }};
+		{{- end }}
+
+		{{ if $routerConfig.LoadModsecurityModule -}}
+		# Turning on modsecurity if modsecurity module loaded
+		modsecurity on;
+		modsecurity_rules_file /opt/router/conf/modsecurity.conf;
+		{{- end }}
 
 		{{ if index $appConfig.Certificates $domain }}
 		listen 6443 ssl {{ if $routerConfig.HTTP2Enabled }}http2{{ end }} {{ if $routerConfig.UseProxyProtocol }}proxy_protocol{{ end }};

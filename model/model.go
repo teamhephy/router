@@ -57,6 +57,9 @@ type RouterConfig struct {
 	DefaultWhitelist         []string    `key:"defaultWhitelist" constraint:"^((([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\\/([0-9]|[1-2][0-9]|3[0-2]))?(\\s*,\\s*)?)+$"`
 	WhitelistMode            string      `key:"whitelistMode" constraint:"^(extend|override)$"`
 	EnableRegexDomains       bool        `key:"enableRegexDomains" constraint:"(?i)^(true|false)$"`
+	LoadTcellModule          bool        `key:"loadTcellModule" constraint:"(?i)^(true|false)$"`
+	GlobalTcellAppID         string      `key:"globalTcellAppID" constraint:"(?i)^([a-z0-9]+(-[a-z0-9]+)*)+[a-z0-9]+$"`
+	LoadModsecurityModule    bool        `key:"loadModsecurityModule" constraint:"(?i)^(true|false)$"`
 	DefaultServiceIP         string      `key:"defaultServiceIP"`
 	DefaultAppName           string      `key:"defaultAppName"`
 	DefaultServiceEnabled    bool        `key:"defaultServiceEnabled" constraint:"(?i)^(true|false)$"`
@@ -93,6 +96,8 @@ func newRouterConfig() (*RouterConfig, error) {
 		EnforceWhitelists:        false,
 		WhitelistMode:            "extend",
 		EnableRegexDomains:       false,
+		LoadTcellModule:          false,
+		LoadModsecurityModule:    false,
 		RequestIDs:               false,
 		SSLConfig:                newSSLConfig(),
 		DefaultServiceEnabled:    false,
@@ -134,6 +139,7 @@ type AppConfig struct {
 	Name           string
 	Domains        []string `key:"domains" constraint:"(?i)^((([a-z0-9]+(-*[a-z0-9]+)*)|((\\*\\.)?[a-z0-9]+(-*[a-z0-9]+)*\\.)+[a-z0-9]+(-*[a-z0-9]+)+)(\\s*,\\s*)?)+$"`
 	RegexDomain    string   `key:"regexDomain"`
+	TcellAppID     string   `key:"tcellAppID" constraint:"(?i)^([a-z0-9]+(-[a-z0-9]+)*)+[a-z0-9]+$"`
 	Whitelist      []string `key:"whitelist" constraint:"^((([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\\/([0-9]|[1-2][0-9]|3[0-2]))?(\\s*,\\s*)?)+$"`
 	ConnectTimeout string   `key:"connectTimeout" constraint:"^[1-9]\\d*(ms|[smhdwMy])?$"`
 	TCPTimeout     string   `key:"tcpTimeout" constraint:"^[1-9]\\d*(ms|[smhdwMy])?$"`
