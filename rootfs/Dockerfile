@@ -48,9 +48,9 @@ RUN buildDeps='gcc make apt-utils libgeoip-dev libssl-dev libpcre3-dev'; \
     # include tcell dynamic nginx module
     mkdir "$PREFIX/modules" && \
     cd "$PREFIX/modules" && \
-    get_src 89684226a94f4fef82ecd045892812e6d2c1c3ebdd3ab3331ad78b182b8226a1 "https://s3.amazonaws.com/hephy-artifacts/hephy-router/nginx_tcellagent-1.0.8-agentonly-zuora-linux-x86_64.tar.gz" && \
-    mv "$PREFIX/modules/nginx_tcellagent-1.0.8-agentonly-zuora-linux-x86_64/ubuntu/xenial/nginx-1.13.7-custom_flags_ssl_1.0.2g/ngx_http_tcell_agent_module.so" . && \
-    rm -rf "$PREFIX/modules/nginx_tcellagent-1.0.8-agentonly-zuora-linux-x86_64" && \
+    get_src 8f30a4d5f4a65e1a94c367b98cfec33e727453a7e7ffc7e85094a0e7a561f72d "https://s3.amazonaws.com/hephy-artifacts/hephy-router/nginx_tcellagent-1.1.0-agentonly-zuora-linux-x86_64.tar.gz" && \
+    mv "$PREFIX/modules/nginx_tcellagent-1.1.0-agentonly-zuora-linux-x86_64/ubuntu/xenial/nginx-1.13.7-custom_flags_ssl_1.0.2g/ngx_http_tcell_agent_module.so" . && \
+    rm -rf "$PREFIX/modules/nginx_tcellagent-1.1.0-agentonly-zuora-linux-x86_64" && \
     # include libmodsecurity3 and modsecurity connector dynamic module
     modsecurityDeps='apt-utils git libcurl4-openssl-dev libyajl-dev libxml2 libxml2-dev' && \
     apt-get install -y --no-install-recommends \
