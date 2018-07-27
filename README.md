@@ -536,7 +536,9 @@ The Helm [chart][] available for installing router (either with or without the r
 
 * __Should your router [define and enforce a default whitelist](#enforce-whitelists)?__  This may be advisable for routers governing ingress to a cluster that hosts applications intended for a limited audience-- e.g. applications for internal use within an organization.
 
-* __Do you need to scale the router?__ For greater availability, it's desirable to run more than one instance of the router.  _How many_ can only be informed by stress/performance testing the applications in your cluster.  To increase the number of router instances from the default of one, increase the number of replicas specified by the `deis-router` deployment object.  Do not specify a number of replicas greater than the number of worker nodes in your Kubernetes cluster.
+* __Do you need to scale the router?__ For greater availability, it's desirable to run more than one instance of the router.  _How many_ can only be informed by stress/performance testing the applications in your cluster.  To increase the number of router instances from the default of one, increase the number of replicas specified by the `deis-router` deployment object.  Do not specify a number of replicas greater than the number of worker nodes in your Kubernetes cluster.  
+
+  There are a few scaling concerns when it comes to running many instances of the router.  When there are many applications and services deployed, the router needs to query the k8s API for relevant metadata concerning itself and all routable services in order to generate the nginx config.  This takes longer as the number of application/services increases and the router pods could timeout on the health checks before the k8s API client populates the RouterConfig object inside the pod.  It may be necessary to increase the `initialDelaySeconds` timeout of `livenessProbe` and `readinessProbe` health checks of the `deis-router` deployment object at some point when reaching that scale.
 
 [issues]: https://github.com/teamhephy/router/issues
 [prs]: https://github.com/teamhephy/router/pulls
