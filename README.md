@@ -288,6 +288,8 @@ _Note that Kubernetes annotation maps are all of Go type `map[string]string`.  A
 | <a name="app-nginx-proxy-buffers-number"></a>routable application | service | [router.deis.io/nginx.proxyBuffers.number](#app-nginx-proxy-buffers-number) | `"8"` | `number` argument to the nginx `proxy_buffers` directive. This can be used to override the same option set globally on the router. |
 | <a name="app-nginx-proxy-buffers-size"></a>routable application | service | [router.deis.io/nginx.proxyBuffers.size](#app-nginx-proxy-buffers-size) | `"4k"` | `size` argument to the nginx `proxy_buffers` directive expressed in bytes (no suffix), kilobytes (suffixes `k` and `K`), or megabytes (suffixes `m` and `M`). This can be used to override the same option set globally on the router. |
 | <a name="app-nginx-proxy-buffers-busy-size"></a>routable application | service | [router.deis.io/nginx.proxyBuffers.busySize](#app-nginx-proxy-buffers-busy-size) | `"8k"` | nginx `proxy_busy_buffers_size` expressed in bytes (no suffix), kilobytes (suffixes `k` and `K`), or megabytes (suffixes `m` and `M`). This can be used to override the same option set globally on the router. |
+|<a name="app-proxy-locations"></a>routable application | service | [router.deis.io/proxyLocations](#app-proxy-locations) | N/A | A list of locations of this servide to plug-in into another service determined by `router.deis.io/proxyDomain`    |
+|<a name="app-proxy-domain"></a>routable application | service | [router.deis.io/proxyDomain](#app-proxy-domain) | N/A | A reference to another service to plug-in `router.deis.io/proxyLocations` to |
 
 #### Annotations by example
 

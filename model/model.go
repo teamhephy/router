@@ -3,6 +3,7 @@ package model
 import (
 	"bytes"
 	"encoding/gob"
+	goerrors "errors"
 	"fmt"
 	"log"
 	"strings"
@@ -150,6 +151,14 @@ type AppConfig struct {
 	Maintenance    bool            `key:"maintenance" constraint:"(?i)^(true|false)$"`
 	SSLConfig      *SSLConfig      `key:"ssl"`
 	Nginx          *NginxAppConfig `key:"nginx"`
+	ProxyLocations []string        `key:"proxyLocations"`
+	ProxyDomain    string          `key:"proxyDomain"`
+	Locations      []*Location
+}
+
+type Location struct {
+	App  *AppConfig
+	Path string
 }
 
 func newAppConfig(routerConfig *RouterConfig) (*AppConfig, error) {
@@ -391,6 +400,11 @@ func build(kubeClient *kubernetes.Clientset, routerDeployment *v1beta1ext.Deploy
 			routerConfig.AppConfigs = append(routerConfig.AppConfigs, appConfig)
 		}
 	}
+	err = linkLocations(routerConfig.AppConfigs)
+	if err != nil {
+		return nil, err
+	}
+	addRootLocations(routerConfig.AppConfigs)
 	if builderService != nil {
 		builderConfig, err := buildBuilderConfig(builderService)
 		if err != nil {
@@ -401,6 +415,41 @@ func build(kubeClient *kubernetes.Clientset, routerDeployment *v1beta1ext.Deploy
 		}
 	}
 	return routerConfig, nil
+}
+
+func appByDomain(appConfigs []*AppConfig, domain string) *AppConfig {
+	for _, app := range appConfigs {
+		for _, appDomain := range app.Domains {
+			if domain == appDomain {
+				return app
+			}
+		}
+	}
+	return nil
+}
+
+func linkLocations(appConfigs []*AppConfig) error {
+	for _, app := range appConfigs {
+		if app.ProxyDomain != "" && len(app.ProxyLocations) > 0 {
+			targetApp := appByDomain(appConfigs, app.ProxyDomain)
+			if targetApp == nil {
+				return goerrors.New(fmt.Sprintf("Can't find ProxyDomain '%s' in any application", app.ProxyDomain))
+			}
+
+			for _, loc := range app.ProxyLocations {
+				location := &Location{App: app, Path: loc}
+				targetApp.Locations = append(targetApp.Locations, location)
+			}
+		}
+	}
+	return nil
+}
+
+func addRootLocations(appConfigs []*AppConfig) {
+	for _, app := range appConfigs {
+		rootLocation := &Location{App: app, Path: "/"}
+		app.Locations = append(app.Locations, rootLocation)
+	}
 }
 
 func buildRouterConfig(routerDeployment *v1beta1.Deployment, platformCertSecret *v1.Secret, dhParamSecret *v1.Secret) (*RouterConfig, error) {
@@ -449,6 +498,7 @@ func buildAppConfig(kubeClient *kubernetes.Clientset, service v1.Service, router
 	if err != nil {
 		return nil, err
 	}
+
 	// If no domains are found, we don't have the information we need to build routes
 	// to this application.  Abort.
 	if len(appConfig.Domains) == 0 {
