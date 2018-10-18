@@ -288,6 +288,8 @@ _Note that Kubernetes annotation maps are all of Go type `map[string]string`.  A
 | <a name="app-nginx-proxy-buffers-number"></a>routable application | service | [router.deis.io/nginx.proxyBuffers.number](#app-nginx-proxy-buffers-number) | `"8"` | `number` argument to the nginx `proxy_buffers` directive. This can be used to override the same option set globally on the router. |
 | <a name="app-nginx-proxy-buffers-size"></a>routable application | service | [router.deis.io/nginx.proxyBuffers.size](#app-nginx-proxy-buffers-size) | `"4k"` | `size` argument to the nginx `proxy_buffers` directive expressed in bytes (no suffix), kilobytes (suffixes `k` and `K`), or megabytes (suffixes `m` and `M`). This can be used to override the same option set globally on the router. |
 | <a name="app-nginx-proxy-buffers-busy-size"></a>routable application | service | [router.deis.io/nginx.proxyBuffers.busySize](#app-nginx-proxy-buffers-busy-size) | `"8k"` | nginx `proxy_busy_buffers_size` expressed in bytes (no suffix), kilobytes (suffixes `k` and `K`), or megabytes (suffixes `m` and `M`). This can be used to override the same option set globally on the router. |
+|<a name="app-proxy-locations"></a>routable application | service | [router.deis.io/proxyLocations](#app-proxy-locations) | N/A | A list of locations of this service to plug-in into another service determined by `router.deis.io/proxyDomain`  (see example below)  |
+|<a name="app-proxy-domain"></a>routable application | service | [router.deis.io/proxyDomain](#app-proxy-domain) | N/A | A reference to another service to plug-in `router.deis.io/proxyLocations` to (see example below) |
 
 #### Annotations by example
 
@@ -334,6 +336,40 @@ metadata:
   # ...
   annotations:
     router.deis.io/domains: foo,bar,www.foobar.com
+# ...
+```
+
+##### proxy locations:
+
+Service of the application where we want `/webhooks` path to be handled by another service
+```
+apiVersion: v1
+kind: Service
+metadata:
+  name: app_with_overwritten_webhooks_location
+  labels:
+    router.deis.io/routable: "true"
+  namespace: router-examples
+  # ...
+  annotations:
+    router.deis.io/domains: app_with_overwritten_webhooks_location
+# ...
+```
+
+Service of the application which should handle `/webhooks` path of the app above
+```
+apiVersion: v1
+kind: Service
+metadata:
+  name: app_webhooks_location_handler
+  labels:
+    router.deis.io/routable: "true"
+  namespace: router-examples
+  # ...
+  annotations:
+    ...
+    router.deis.io/proxyDomain=app_with_overwritten_webhooks_location
+    router.deis.io/proxyLocations=/webhooks
 # ...
 ```
 

@@ -270,41 +270,44 @@ http {
 
 		vhost_traffic_status_filter_by_set_key {{ $appConfig.Name }} application::*;
 
-		location / {
-			{{ if $routerConfig.RequestIDs }}
-			add_header X-Request-Id $request_id always;
-			add_header X-Correlation-Id $correlation_id always;
-			{{end}}
+		{{range $location := $appConfig.Locations}}
+			location {{ $location.Path }} {
+				{{ if $routerConfig.RequestIDs }}
+				add_header X-Request-Id $request_id always;
+				add_header X-Correlation-Id $correlation_id always;
+				{{end}}
 
-			{{ if $appConfig.Maintenance }}return 503;{{ else if $appConfig.Available }}
-			proxy_buffering {{ if $appConfig.Nginx.ProxyBuffersConfig.Enabled }}on{{ else }}off{{ end }};
-			proxy_buffer_size {{ $appConfig.Nginx.ProxyBuffersConfig.Size }};
-			proxy_buffers {{ $appConfig.Nginx.ProxyBuffersConfig.Number }} {{ $appConfig.Nginx.ProxyBuffersConfig.Size }};
-			proxy_busy_buffers_size {{ $appConfig.Nginx.ProxyBuffersConfig.BusySize }};
-			proxy_set_header Host $host;
-			proxy_set_header X-Forwarded-For $remote_addr;
-			proxy_set_header X-Forwarded-Proto $access_scheme;
-			proxy_set_header X-Forwarded-Port $forwarded_port;
-			proxy_redirect off;
-			proxy_connect_timeout {{ $appConfig.ConnectTimeout }};
-			proxy_send_timeout {{ $appConfig.TCPTimeout }};
-			proxy_read_timeout {{ $appConfig.TCPTimeout }};
-			proxy_http_version 1.1;
-			proxy_set_header Upgrade $http_upgrade;
-			proxy_set_header Connection $connection_upgrade;
-			{{ if $routerConfig.RequestIDs }}
-			proxy_set_header X-Request-Id $request_id;
-			proxy_set_header X-Correlation-Id $correlation_id;
-			{{ end }}
+				{{ if $location.App.Maintenance }}return 503;{{ else if $location.App.Available }}
+				proxy_buffering {{ if $location.App.Nginx.ProxyBuffersConfig.Enabled }}on{{ else }}off{{ end }};
+				proxy_buffer_size {{ $location.App.Nginx.ProxyBuffersConfig.Size }};
+				proxy_buffers {{ $location.App.Nginx.ProxyBuffersConfig.Number }} {{ $location.App.Nginx.ProxyBuffersConfig.Size }};
+				proxy_busy_buffers_size {{ $location.App.Nginx.ProxyBuffersConfig.BusySize }};
+				proxy_set_header Host $host;
+				proxy_set_header X-Forwarded-For $remote_addr;
+				proxy_set_header X-Forwarded-Proto $access_scheme;
+				proxy_set_header X-Forwarded-Port $forwarded_port;
+				proxy_redirect off;
+				proxy_connect_timeout {{ $location.App.ConnectTimeout }};
+				proxy_send_timeout {{ $location.App.TCPTimeout }};
+				proxy_read_timeout {{ $location.App.TCPTimeout }};
+				proxy_http_version 1.1;
+				proxy_set_header Upgrade $http_upgrade;
+				proxy_set_header Connection $connection_upgrade;
+				{{ if $routerConfig.RequestIDs }}
+				proxy_set_header X-Request-Id $request_id;
+				proxy_set_header X-Correlation-Id $correlation_id;
+				{{ end }}
 
-			{{ if or $enforceSecure $appConfig.SSLConfig.Enforce }}if ($access_scheme !~* "^https|wss$") {
-				return 301 $uri_scheme://$host$request_uri;
-			}{{ end }}
+				{{ if or $enforceSecure $location.App.SSLConfig.Enforce }}if ($access_scheme !~* "^https|wss$") {
+					return 301 $uri_scheme://$host$request_uri;
+				}{{ end }}
 
-			{{ if $hstsConfig.Enabled }}add_header Strict-Transport-Security $sts always;{{ end }}
+				{{ if $hstsConfig.Enabled }}add_header Strict-Transport-Security $sts always;{{ end }}
 
-			proxy_pass http://{{$appConfig.ServiceIP}}:80;{{ else }}return 503;{{ end }}
-		}
+				proxy_pass http://{{$location.App.ServiceIP}}:80;{{ else }}return 503;{{ end }}
+			}
+		{{end}}
+
 		{{ if $appConfig.Maintenance }}error_page 503 @maintenance;
 			location @maintenance {
 					root /;
