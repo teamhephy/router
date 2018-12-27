@@ -56,13 +56,14 @@ RUN buildDeps='gcc make apt-utils libgeoip-dev libssl-dev libpcre3-dev'; \
     apt-get install -y --no-install-recommends \
         $modsecurityDeps && \
     cd "$PREFIX/modules" && \
-    get_src 2dd0d6dc258da729a42a94ea5118a3b16b2f3f7f91c198342a67f19378656366 "https://s3.amazonaws.com/hephy-artifacts/hephy-router/modsecurity-v3-ubuntu-16.04.tar.gz" && \
+    get_src 136e0faf4b313817abd07365935ebd9174e8754700fe8a06281dbcbbe6d0ad50 "https://s3.amazonaws.com/hephy-artifacts/hephy-router/modsecurity-v3.0.3-ubuntu-16-04.tar.gz" && \
     mv usr/local/modsecurity /usr/local/modsecurity && \
     rm -rf usr && \
     get_src_file c9fd4ddb69ba1ce0a3118e529c43f87c3ab216e20900e25863e58537399d2d19 "https://s3.amazonaws.com/hephy-artifacts/hephy-router/ngx_http_modsecurity_module.so" && \
     # setup the modsecurity config and OWASP rules
     cd "$PREFIX/conf" && \
-    get_src_file 905d47245003204b338eb1760933ab48a12c6b1a29c6f7080860b6c5d9ad337b "https://s3.amazonaws.com/hephy-artifacts/hephy-router/modsecurity.conf" && \
+    get_src_file 5614fd0f68fc7707c0dc008d45b92de586b6e14937a41b93e80165aec454eecd "https://s3.amazonaws.com/hephy-artifacts/hephy-router/modsecurity.conf" && \
+    curl -sSL https://github.com/SpiderLabs/ModSecurity/raw/v3/master/unicode.mapping -o unicode.mapping && \
     git clone https://github.com/SpiderLabs/owasp-modsecurity-crs.git && \
     cp -R owasp-modsecurity-crs/rules/ $PREFIX/conf/ && \
     cp $PREFIX/conf/owasp-modsecurity-crs/crs-setup.conf.example $PREFIX/conf/crs-setup.conf && \
