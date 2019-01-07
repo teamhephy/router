@@ -72,6 +72,7 @@ type RouterConfig struct {
 	HTTP2Enabled             bool                `key:"http2Enabled" constraint:"(?i)^(true|false)$"`
 	LogFormat                string              `key:"logFormat"`
 	ProxyBuffersConfig       *ProxyBuffersConfig `key:"proxyBuffers"`
+	ReferrerPolicy           string              `key:"referrerPolicy" constraint:"^(no-referrer|no-referrer-when-downgrade|origin|origin-when-cross-origin|same-origin|strict-origin|strict-origin-when-cross-origin|unsafe-url|none)$"`
 }
 
 func newRouterConfig() (*RouterConfig, error) {
@@ -107,6 +108,7 @@ func newRouterConfig() (*RouterConfig, error) {
 		HTTP2Enabled:             true,
 		LogFormat:                `[$time_iso8601] - $app_name - $remote_addr - $remote_user - $status - "$request" - $bytes_sent - "$http_referer" - "$http_user_agent" - "$server_name" - $upstream_addr - $http_host - $upstream_response_time - $request_time`,
 		ProxyBuffersConfig:       proxyBuffersConfig,
+		ReferrerPolicy:           "",
 	}, nil
 }
 
@@ -149,6 +151,7 @@ type AppConfig struct {
 	Certificates   map[string]*Certificate
 	Available      bool
 	Maintenance    bool            `key:"maintenance" constraint:"(?i)^(true|false)$"`
+	ReferrerPolicy string          `key:"referrerPolicy" constraint:"^(no-referrer|no-referrer-when-downgrade|origin|origin-when-cross-origin|same-origin|strict-origin|strict-origin-when-cross-origin|unsafe-url|none)$"`
 	SSLConfig      *SSLConfig      `key:"ssl"`
 	Nginx          *NginxAppConfig `key:"nginx"`
 	ProxyLocations []string        `key:"proxyLocations"`
