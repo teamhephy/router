@@ -73,6 +73,8 @@ type RouterConfig struct {
 	LogFormat                string              `key:"logFormat"`
 	ProxyBuffersConfig       *ProxyBuffersConfig `key:"proxyBuffers"`
 	ReferrerPolicy           string              `key:"referrerPolicy" constraint:"^(no-referrer|no-referrer-when-downgrade|origin|origin-when-cross-origin|same-origin|strict-origin|strict-origin-when-cross-origin|unsafe-url|none)$"`
+	HTTP2MaxHeaderSize       string              `key:"http2MaxHeaderSize" constraint:"^[0-9]\\d*[kKmM]?$"`
+	HTTP2MaxFieldSize        string              `key:"http2MaxFieldSize" constraint:"^[0-9]\\d*[kKmM]?$"`
 }
 
 func newRouterConfig() (*RouterConfig, error) {
@@ -109,6 +111,8 @@ func newRouterConfig() (*RouterConfig, error) {
 		LogFormat:                `[$time_iso8601] - $app_name - $remote_addr - $remote_user - $status - "$request" - $bytes_sent - "$http_referer" - "$http_user_agent" - "$server_name" - $upstream_addr - $http_host - $upstream_response_time - $request_time`,
 		ProxyBuffersConfig:       proxyBuffersConfig,
 		ReferrerPolicy:           "",
+		HTTP2MaxHeaderSize:       "32k",
+		HTTP2MaxFieldSize:        "16k",
 	}, nil
 }
 
@@ -159,6 +163,7 @@ type AppConfig struct {
 	Locations      []*Location
 }
 
+// Location encapsulates Path and AppConfig
 type Location struct {
 	App  *AppConfig
 	Path string
