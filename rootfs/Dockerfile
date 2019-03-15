@@ -1,3 +1,37 @@
+FROM quay.io/deis/base:v0.3.6 as modsecurity
+
+COPY /bin /bin
+WORKDIR /tmp/build
+
+RUN set -x && \
+    apt-get update && \
+    apt-get install -y --no-install-recommends \
+        g++ make \
+        libcurl4-openssl-dev \
+        libyajl-dev \
+        liblmdb-dev \
+        libxml2-dev \
+        libpcre3-dev \
+        libmaxminddb-dev \
+        libfuzzy-dev && \
+    export MOD_SECURITY_VERSION=3.0.3 BUILD_PATH=$PWD PREFIX=/usr/local && \
+    get_src 8aa1300105d8cc23315a5e54421192bc617a66246ad004bd89e67c232208d0f4 \
+            "https://github.com/SpiderLabs/ModSecurity/releases/download/v$MOD_SECURITY_VERSION/modsecurity-v$MOD_SECURITY_VERSION.tar.gz" && \
+    cd "$BUILD_PATH/modsecurity-v$MOD_SECURITY_VERSION" && \
+    ./configure \
+      --prefix="$PREFIX" \
+      --enable-silent-rules \
+      --enable-static=no \
+      --disable-doxygen-doc \
+      --disable-examples \
+      --disable-dependency-tracking && \
+    make -j`nproc` && \
+    make install-strip && \
+    install -D -m 644 -t "$PREFIX/share/modsecurity" \
+        unicode.mapping \
+        modsecurity.conf-recommended
+
+
 FROM quay.io/deis/base:v0.3.6
 
 RUN adduser --system \
@@ -7,20 +41,33 @@ RUN adduser --system \
 	--group \
 	router
 
+COPY --from=modsecurity /usr/local /usr/local
+
 COPY /bin /bin
 
-RUN buildDeps='gcc make apt-utils libgeoip-dev libssl-dev libpcre3-dev'; \
+RUN set -x && \
+    buildDeps='gcc make apt-utils libgeoip-dev libmaxminddb-dev libssl-dev libpcre3-dev' \
+    runtimeDeps='libcurl3 libxml2 libpcre3 libgeoip1 libmaxminddb0 libfuzzy2 openssl' && \
     apt-get update && \
     apt-get install -y --no-install-recommends \
         $buildDeps \
-        libgeoip1 && \
-    export NGINX_VERSION=1.14.2 SIGNING_KEY=A1C052F8 VTS_VERSION=0.1.18 BUILD_PATH=/tmp/build PREFIX=/opt/router && \
+        $runtimeDeps && \
+    export NGINX_VERSION=1.14.2 SIGNING_KEY=A1C052F8 \
+           VTS_VERSION=0.1.18 GEOIP2_VERSION=3.2 \
+           MOD_SECURITY_NGINX_VERSION=d7101e13685efd7e7c9f808871b202656a969f4b \
+           OWASP_MOD_SECURITY_CRS_VERSION=46171c0ef335f92b26787ce269e397c480286155 \
+           BUILD_PATH=/tmp/build PREFIX=/opt/router && \
     rm -rf "$PREFIX" && \
     mkdir "$PREFIX" && \
     mkdir "$BUILD_PATH" && \
     cd "$BUILD_PATH" && \
     get_src_gpg $SIGNING_KEY "http://nginx.org/download/nginx-$NGINX_VERSION.tar.gz" && \
-    get_src 17ea41d4083f6d1ab1ab83dad9160eeca66867abe16c5a0421f85a39d7c84b65 "https://github.com/vozlt/nginx-module-vts/archive/v$VTS_VERSION.tar.gz" && \
+    get_src 17ea41d4083f6d1ab1ab83dad9160eeca66867abe16c5a0421f85a39d7c84b65 \
+            "https://github.com/vozlt/nginx-module-vts/archive/v$VTS_VERSION.tar.gz" && \
+    get_src 15bd1005228cf2c869a6f09e8c41a6aaa6846e4936c473106786ae8ac860fab7 \
+            "https://github.com/leev/ngx_http_geoip2_module/archive/$GEOIP2_VERSION.tar.gz" && \
+    get_src 5c8d25e68fb852f61489b669aebb7bd8ca8c88ebb5e5f969212fcceff3ee2d0b \
+            "https://github.com/SpiderLabs/ModSecurity-nginx/archive/$MOD_SECURITY_NGINX_VERSION.tar.gz" && \
     cd "$BUILD_PATH/nginx-$NGINX_VERSION" && \
     ./configure \
       --prefix="$PREFIX" \
@@ -36,48 +83,43 @@ RUN buildDeps='gcc make apt-utils libgeoip-dev libssl-dev libpcre3-dev'; \
       --with-http_dav_module \
       --with-http_geoip_module \
       --with-http_gzip_static_module \
+      --with-http_gunzip_module \
       --with-http_sub_module \
       --with-http_v2_module \
       --with-mail \
       --with-mail_ssl_module \
       --with-stream \
-      --add-module="$BUILD_PATH/nginx-module-vts-$VTS_VERSION" && \
-    make && \
+      --add-module="$BUILD_PATH/nginx-module-vts-$VTS_VERSION" \
+      --add-dynamic-module="$BUILD_PATH/ngx_http_geoip2_module-$GEOIP2_VERSION" \
+      --add-dynamic-module="$BUILD_PATH/ModSecurity-nginx-$MOD_SECURITY_NGINX_VERSION" && \
+    make -j`nproc` && \
     make install && \
-    rm -rf "$BUILD_PATH" && \
-    # include tcell dynamic nginx module
-    mkdir "$PREFIX/modules" && \
-    cd "$PREFIX/modules" && \
-    get_src 8f30a4d5f4a65e1a94c367b98cfec33e727453a7e7ffc7e85094a0e7a561f72d "https://s3.amazonaws.com/hephy-artifacts/hephy-router/nginx_tcellagent-1.1.0-agentonly-zuora-linux-x86_64.tar.gz" && \
-    mv "$PREFIX/modules/nginx_tcellagent-1.1.0-agentonly-zuora-linux-x86_64/ubuntu/xenial/nginx-1.13.7-custom_flags_ssl_1.0.2g/ngx_http_tcell_agent_module.so" . && \
-    rm -rf "$PREFIX/modules/nginx_tcellagent-1.1.0-agentonly-zuora-linux-x86_64" && \
-    # include libmodsecurity3 and modsecurity connector dynamic module
-    modsecurityDeps='apt-utils git libcurl4-openssl-dev libyajl-dev libxml2 libxml2-dev' && \
-    apt-get install -y --no-install-recommends \
-        $modsecurityDeps && \
-    cd "$PREFIX/modules" && \
-    get_src 136e0faf4b313817abd07365935ebd9174e8754700fe8a06281dbcbbe6d0ad50 "https://s3.amazonaws.com/hephy-artifacts/hephy-router/modsecurity-v3.0.3-ubuntu-16-04.tar.gz" && \
-    mv usr/local/modsecurity /usr/local/modsecurity && \
-    rm -rf usr && \
-    get_src_file c9fd4ddb69ba1ce0a3118e529c43f87c3ab216e20900e25863e58537399d2d19 "https://s3.amazonaws.com/hephy-artifacts/hephy-router/ngx_http_modsecurity_module.so" && \
+    strip -s "$PREFIX/sbin/nginx" "$PREFIX/modules/"*.so && \
+    cd "$BUILD_PATH" && \
     # setup the modsecurity config and OWASP rules
-    cd "$PREFIX/conf" && \
-    get_src_file 5614fd0f68fc7707c0dc008d45b92de586b6e14937a41b93e80165aec454eecd "https://s3.amazonaws.com/hephy-artifacts/hephy-router/modsecurity.conf" && \
-    curl -sSL https://github.com/SpiderLabs/ModSecurity/raw/v3/master/unicode.mapping -o unicode.mapping && \
-    git clone https://github.com/SpiderLabs/owasp-modsecurity-crs.git && \
-    cp -R owasp-modsecurity-crs/rules/ $PREFIX/conf/ && \
-    cp $PREFIX/conf/owasp-modsecurity-crs/crs-setup.conf.example $PREFIX/conf/crs-setup.conf && \
-    rm -rf owasp-modsecurity-crs && \
+    get_src c0e5d496db41b9b5e201fd8138e2507d22b22cf945b7b06bf3c9fad31b0bba95 \
+            "https://github.com/SpiderLabs/owasp-modsecurity-crs/archive/$OWASP_MOD_SECURITY_CRS_VERSION.tar.gz" && \
+    cp -R owasp-modsecurity-crs-$OWASP_MOD_SECURITY_CRS_VERSION/rules $PREFIX/conf/ && \
+    cp owasp-modsecurity-crs-$OWASP_MOD_SECURITY_CRS_VERSION/crs-setup.conf.example $PREFIX/conf/crs-setup.conf && \
+    cp /usr/local/share/modsecurity/unicode.mapping "$PREFIX/conf/" && \
+    sed -e 's/^SecRuleEngine DetectionOnly/SecRuleEngine On/' \
+        -e '$ a # Load OWASP Core Rule Set' \
+        -e '$ a Include crs-setup.conf' \
+        -e '$ a Include rules/*.conf' \
+        /usr/local/share/modsecurity/modsecurity.conf-recommended > "$PREFIX/conf/modsecurity.conf" && \
+    cd / && \
+    rm -rf "$BUILD_PATH" && \
+    rm -rf /usr/local/include/* && \
     # cleanup
     apt-get purge -y --auto-remove $buildDeps && \
     apt-get autoremove -y && \
     apt-get clean -y && \
     # package up license files if any by appending to existing tar
-    COPYRIGHT_TAR='/usr/share/copyrights.tar'; \
-    gunzip -f $COPYRIGHT_TAR.gz; tar -rf $COPYRIGHT_TAR /usr/share/doc/*/copyright; gzip $COPYRIGHT_TAR && \
+    COPYRIGHT_TAR='/usr/share/copyrights.tar' && \
+    gunzip -f $COPYRIGHT_TAR.gz && tar -rf $COPYRIGHT_TAR /usr/share/doc/*/copyright && gzip $COPYRIGHT_TAR && \
     rm -rf \
         /usr/share/doc \
-        /usr/share/man \
+        /usr/share/man/man?/* \
         /usr/share/info \
         /usr/share/locale \
         /var/lib/apt/lists/* \
@@ -87,8 +129,7 @@ RUN buildDeps='gcc make apt-utils libgeoip-dev libssl-dev libpcre3-dev'; \
         /lib/lsb \
         /lib/udev \
         /usr/lib/x86_64-linux-gnu/gconv/IBM* \
-        /usr/lib/x86_64-linux-gnu/gconv/EBC* && \
-    bash -c "mkdir -p /usr/share/man/man{1..8}"
+        /usr/lib/x86_64-linux-gnu/gconv/EBC*
 
 COPY . /
 
