@@ -15,8 +15,8 @@ const (
 )
 
 var (
-	sampleData        = make(map[string]string, 0)
-	invalidSampleData = make(map[string]string, 0)
+	sampleData        = make(map[string]string)
+	invalidSampleData = make(map[string]string)
 	m                 = NewModeler(prefix, fieldTag, constraintTag, false)
 )
 

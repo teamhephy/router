@@ -3,7 +3,6 @@ package model
 import (
 	"bytes"
 	"encoding/gob"
-	goerrors "errors"
 	"fmt"
 	"log"
 	"strings"
@@ -163,7 +162,7 @@ type AppConfig struct {
 	Locations      []*Location
 }
 
-// Location encapsulates Path and AppConfig
+// Location represents a location block inside a back end server block.
 type Location struct {
 	App  *AppConfig
 	Path string
@@ -177,7 +176,7 @@ func newAppConfig(routerConfig *RouterConfig) (*AppConfig, error) {
 	return &AppConfig{
 		ConnectTimeout: "30s",
 		TCPTimeout:     routerConfig.DefaultTimeout,
-		Certificates:   make(map[string]*Certificate, 0),
+		Certificates:   make(map[string]*Certificate),
 		SSLConfig:      newSSLConfig(),
 		Nginx:          nginxConfig,
 	}, nil
@@ -441,7 +440,7 @@ func linkLocations(appConfigs []*AppConfig) error {
 		if app.ProxyDomain != "" && len(app.ProxyLocations) > 0 {
 			targetApp := appByDomain(appConfigs, app.ProxyDomain)
 			if targetApp == nil {
-				return goerrors.New(fmt.Sprintf("Can't find ProxyDomain '%s' in any application", app.ProxyDomain))
+				return fmt.Errorf("Can't find ProxyDomain '%s' in any application", app.ProxyDomain)
 			}
 
 			for _, loc := range app.ProxyLocations {

@@ -134,7 +134,7 @@ func (m *Modeler) mapToModel(data map[string]string, context string, rv reflect.
 					}
 					elem.Field(i).Set(reflect.ValueOf(mapVal))
 				} else {
-					return fmt.Errorf("Unsupported type %s.", rf.Type.Kind())
+					return fmt.Errorf("Unsupported type %s", rf.Type.Kind())
 				}
 			}
 		}
