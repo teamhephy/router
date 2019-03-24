@@ -187,21 +187,27 @@ http {
 	server {
 		listen 8080 default_server reuseport{{ if $routerConfig.UseProxyProtocol }} proxy_protocol{{ end }};
 		listen 6443 default_server ssl {{ if $routerConfig.HTTP2Enabled }}http2{{ end }} {{ if $routerConfig.UseProxyProtocol }}proxy_protocol{{ end }};
-        
+
 		# set header size limits
 		{{ if $routerConfig.HTTP2Enabled }} http2_max_header_size {{ $routerConfig.HTTP2MaxHeaderSize }}; {{ end }}
 		{{ if $routerConfig.HTTP2Enabled }} http2_max_field_size  {{ $routerConfig.HTTP2MaxFieldSize }};  {{ end }}
 		
 		set $app_name "router-default-vhost";
-		{{ if $routerConfig.PlatformCertificate }}
 		ssl_protocols {{ $sslConfig.Protocols }};
+		{{ if ne $sslConfig.Ciphers "" }}ssl_ciphers {{ $sslConfig.Ciphers }};{{ end }}
+		ssl_prefer_server_ciphers on;
+		{{ if $routerConfig.PlatformCertificate }}
 		ssl_certificate /opt/router/ssl/platform.crt;
 		ssl_certificate_key /opt/router/ssl/platform.key;
 		{{ else }}
-		ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
 		ssl_certificate /opt/router/ssl/default/default.crt;
 		ssl_certificate_key /opt/router/ssl/default/default.key;
 		{{ end }}
+		{{ if ne $sslConfig.SessionCache "" }}ssl_session_cache {{ $sslConfig.SessionCache }};
+		ssl_session_timeout {{ $sslConfig.SessionTimeout }};{{ end }}
+		ssl_session_tickets {{ if $sslConfig.UseSessionTickets }}on{{ else }}off{{ end }};
+		ssl_buffer_size {{ $sslConfig.BufferSize }};
+		{{ if ne $sslConfig.DHParam "" }}ssl_dhparam /opt/router/ssl/dhparam.pem;{{ end }}
 		{{ if ne $routerConfig.ReferrerPolicy "" }}
 		add_header Referrer-Policy {{ $routerConfig.ReferrerPolicy }};
 		{{ end }}
