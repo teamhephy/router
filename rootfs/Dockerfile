@@ -52,7 +52,7 @@ RUN set -x && \
     apt-get install -y --no-install-recommends \
         $buildDeps \
         $runtimeDeps && \
-    export NGINX_VERSION=1.14.2 SIGNING_KEY=A1C052F8 \
+    export NGINX_VERSION=1.16.1 SIGNING_KEY=A1C052F8 \
            VTS_VERSION=0.1.18 GEOIP2_VERSION=3.2 \
            MOD_SECURITY_NGINX_VERSION=d7101e13685efd7e7c9f808871b202656a969f4b \
            OWASP_MOD_SECURITY_CRS_VERSION=46171c0ef335f92b26787ce269e397c480286155 \
