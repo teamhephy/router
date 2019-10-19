@@ -62,6 +62,7 @@ type RouterConfig struct {
 	DefaultAppName           string      `key:"defaultAppName"`
 	DefaultServiceEnabled    bool        `key:"defaultServiceEnabled" constraint:"(?i)^(true|false)$"`
 	RequestIDs               bool        `key:"requestIDs" constraint:"(?i)^(true|false)$"`
+	RequestStartHeader       bool        `key:"requestStartHeader" constraint:"(?i)^(true|false)$"`
 	SSLConfig                *SSLConfig  `key:"ssl"`
 	AppConfigs               []*AppConfig
 	BuilderConfig            *BuilderConfig
@@ -99,6 +100,7 @@ func newRouterConfig() (*RouterConfig, error) {
 		EnableRegexDomains:       false,
 		LoadModsecurityModule:    false,
 		RequestIDs:               false,
+		RequestStartHeader:       false,
 		SSLConfig:                newSSLConfig(),
 		DefaultServiceEnabled:    false,
 		DefaultAppName:           "",
@@ -139,23 +141,24 @@ func newGzipConfig() *GzipConfig {
 
 // AppConfig encapsulates the configuration for all routes to a single back end.
 type AppConfig struct {
-	Name           string
-	Domains        []string `key:"domains" constraint:"(?i)^((([a-z0-9]+(-*[a-z0-9]+)*)|((\\*\\.)?[a-z0-9]+(-*[a-z0-9]+)*\\.)+[a-z0-9]+(-*[a-z0-9]+)+)(\\s*,\\s*)?)+$"`
-	RegexDomain    string   `key:"regexDomain"`
-	Whitelist      []string `key:"whitelist" constraint:"^((([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\\/([0-9]|[1-2][0-9]|3[0-2]))?(\\s*,\\s*)?)+$"`
-	ConnectTimeout string   `key:"connectTimeout" constraint:"^[1-9]\\d*(ms|[smhdwMy])?$"`
-	TCPTimeout     string   `key:"tcpTimeout" constraint:"^[1-9]\\d*(ms|[smhdwMy])?$"`
-	ServiceIP      string
-	CertMappings   map[string]string `key:"certificates" constraint:"(?i)^((([a-z0-9]+(-*[a-z0-9]+)*)|((\\*\\.)?[a-z0-9]+(-*[a-z0-9]+)*\\.)+[a-z0-9]+(-*[a-z0-9]+)+):([a-z0-9]+(-*[a-z0-9]+)*)(\\s*,\\s*)?)+$"`
-	Certificates   map[string]*Certificate
-	Available      bool
-	Maintenance    bool            `key:"maintenance" constraint:"(?i)^(true|false)$"`
-	ReferrerPolicy string          `key:"referrerPolicy" constraint:"^(no-referrer|no-referrer-when-downgrade|origin|origin-when-cross-origin|same-origin|strict-origin|strict-origin-when-cross-origin|unsafe-url|none)$"`
-	SSLConfig      *SSLConfig      `key:"ssl"`
-	Nginx          *NginxAppConfig `key:"nginx"`
-	ProxyLocations []string        `key:"proxyLocations"`
-	ProxyDomain    string          `key:"proxyDomain"`
-	Locations      []*Location
+	Name                      string
+	Domains                   []string `key:"domains" constraint:"(?i)^((([a-z0-9]+(-*[a-z0-9]+)*)|((\\*\\.)?[a-z0-9]+(-*[a-z0-9]+)*\\.)+[a-z0-9]+(-*[a-z0-9]+)+)(\\s*,\\s*)?)+$"`
+	RegexDomain               string   `key:"regexDomain"`
+	Whitelist                 []string `key:"whitelist" constraint:"^((([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\\/([0-9]|[1-2][0-9]|3[0-2]))?(\\s*,\\s*)?)+$"`
+	ConnectTimeout            string   `key:"connectTimeout" constraint:"^[1-9]\\d*(ms|[smhdwMy])?$"`
+	TCPTimeout                string   `key:"tcpTimeout" constraint:"^[1-9]\\d*(ms|[smhdwMy])?$"`
+	ServiceIP                 string
+	CertMappings              map[string]string `key:"certificates" constraint:"(?i)^((([a-z0-9]+(-*[a-z0-9]+)*)|((\\*\\.)?[a-z0-9]+(-*[a-z0-9]+)*\\.)+[a-z0-9]+(-*[a-z0-9]+)+):([a-z0-9]+(-*[a-z0-9]+)*)(\\s*,\\s*)?)+$"`
+	Certificates              map[string]*Certificate
+	Available                 bool
+	Maintenance               bool            `key:"maintenance" constraint:"(?i)^(true|false)$"`
+	DisableRequestStartHeader bool            `key:"disableRequestStartHeader" constraint:"(?i)^(true|false)$"`
+	ReferrerPolicy            string          `key:"referrerPolicy" constraint:"^(no-referrer|no-referrer-when-downgrade|origin|origin-when-cross-origin|same-origin|strict-origin|strict-origin-when-cross-origin|unsafe-url|none)$"`
+	SSLConfig                 *SSLConfig      `key:"ssl"`
+	Nginx                     *NginxAppConfig `key:"nginx"`
+	ProxyLocations            []string        `key:"proxyLocations"`
+	ProxyDomain               string          `key:"proxyDomain"`
+	Locations                 []*Location
 }
 
 // Location represents a location block inside a back end server block.
