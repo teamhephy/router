@@ -308,6 +308,9 @@ http {
 				proxy_set_header X-Request-Id $request_id;
 				proxy_set_header X-Correlation-Id $correlation_id;
 				{{ end }}
+				{{ if and $routerConfig.RequestStartHeader (not $appConfig.DisableRequestStartHeader) }}
+				proxy_set_header X-Request-Start "t=${msec}";
+				{{ end }}
 
 				{{ if or $enforceSecure $location.App.SSLConfig.Enforce }}if ($access_scheme !~* "^https|wss$") {
 					return 301 $uri_scheme://$host$request_uri;
