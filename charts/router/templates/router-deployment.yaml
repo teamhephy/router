@@ -1,5 +1,5 @@
 {{- if not .Values.global.experimental_native_ingress }}
-apiVersion: extensions/v1beta1
+apiVersion: {{ .Values.global.api_group }}
 kind: Deployment
 metadata:
   name: deis-router
