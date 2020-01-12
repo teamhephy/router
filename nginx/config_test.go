@@ -12,7 +12,7 @@ import (
 	"text/template"
 
 	"github.com/Masterminds/sprig"
-	"github.com/deis/router/model"
+	"github.com/teamhephy/router/model"
 )
 
 func TestWriteCerts(t *testing.T) {

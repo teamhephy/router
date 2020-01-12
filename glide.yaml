@@ -1,4 +1,4 @@
-package: github.com/deis/router
+package: github.com/teamhephy/router
 flatten: true
 ignore:
   - k8s.io/kubernetes
