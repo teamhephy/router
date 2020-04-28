@@ -74,7 +74,7 @@ COPY --from=openssl /usr/local /usr/local
 COPY /bin /bin
 
 RUN set -x && \
-    buildDeps='gcc make patch libgeoip-dev libmaxminddb-dev libpcre3-dev zlib1g-dev' \
+    buildDeps='gcc make patch libgeoip-dev libmaxminddb-dev libpcre3-dev' \
     runtimeDeps='ca-certificates libcurl3 libxml2 libpcre3 libgeoip1 libmaxminddb0 libfuzzy2' && \
     apt-get update && \
     apt-get install -y --no-install-recommends \
@@ -83,6 +83,7 @@ RUN set -x && \
     # Remove openssl binaries from base image, will be provided by our custom build
     apt-get remove -y openssl && \
     export NGINX_VERSION=1.18.0 SIGNING_KEY=A1C052F8 \
+           CLOUDFLARE_ZLIB_VERSION=372bcd151c901418c2721232bf09dc9cdbebafb5 \
            VTS_VERSION=0.1.18 GEOIP2_VERSION=3.3 \
            MOD_SECURITY_NGINX_VERSION=e50e43ee4cc87565922ed98b1b6c72751019c326 \
            OWASP_MOD_SECURITY_CRS_VERSION=cf57fd53de06b87b90d2cc5d61d602df81b2dd70 \
@@ -100,12 +101,16 @@ RUN set -x && \
     # Always enable PrioritizeChaCha in NGINX (prefer ChaCha-Poly for mobile clients w/o AES support)
     get_src_file 95e772ca01c7201ccc2a1b188181b06a497ba89a9076a9b28b32b5814c9e1654 \
             "https://raw.githubusercontent.com/kn007/patch/c59592b/nginx_auto_using_PRIORITIZE_CHACHA.patch" && \
+    get_src 6cd7f933230f657a4a68a1c258f6718d4ed7937725afe2c83a94b71f7a6b5d0f \
+            "https://github.com/cloudflare/zlib/archive/$CLOUDFLARE_ZLIB_VERSION.tar.gz" && \
     get_src 17ea41d4083f6d1ab1ab83dad9160eeca66867abe16c5a0421f85a39d7c84b65 \
             "https://github.com/vozlt/nginx-module-vts/archive/v$VTS_VERSION.tar.gz" && \
     get_src 41378438c833e313a18869d0c4a72704b4835c30acaf7fd68013ab6732ff78a7 \
             "https://github.com/leev/ngx_http_geoip2_module/archive/$GEOIP2_VERSION.tar.gz" && \
     get_src a2e5a6950616ae68ba960f83d45830de9349ea06b5bb9fcf9dda0af453ec747b \
             "https://github.com/SpiderLabs/ModSecurity-nginx/archive/$MOD_SECURITY_NGINX_VERSION.tar.gz" && \
+    cd "$BUILD_PATH/zlib-$CLOUDFLARE_ZLIB_VERSION" && \
+    make -f Makefile.in distclean && \
     cd "$BUILD_PATH/nginx-$NGINX_VERSION" && \
     patch -p1 -i "$BUILD_PATH/nginx_auto_using_PRIORITIZE_CHACHA.patch" && \
     ./configure \
@@ -127,6 +132,7 @@ RUN set -x && \
       --with-mail \
       --with-mail_ssl_module \
       --with-stream \
+      --with-zlib="$BUILD_PATH/zlib-$CLOUDFLARE_ZLIB_VERSION" \
       --add-module="$BUILD_PATH/nginx-module-vts-$VTS_VERSION" \
       --add-dynamic-module="$BUILD_PATH/ngx_http_geoip2_module-$GEOIP2_VERSION" \
       --add-dynamic-module="$BUILD_PATH/ModSecurity-nginx-$MOD_SECURITY_NGINX_VERSION" && \
