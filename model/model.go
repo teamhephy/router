@@ -224,7 +224,7 @@ type SSLConfig struct {
 func newSSLConfig() *SSLConfig {
 	return &SSLConfig{
 		Enforce:   false,
-		Protocols: "TLSv1 TLSv1.1 TLSv1.2",
+		Protocols: "TLSv1 TLSv1.1 TLSv1.2 TLSv1.3",
 		// Default cipher suite:
 		//  - Prefer 128-Bit over 256-Bit encryptions (lower overhead)
 		//  - Prefer GCM over EDH over RSA auth (for Forward Secrecy)
