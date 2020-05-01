@@ -300,7 +300,7 @@ func TestInvalidSSLProtocols(t *testing.T) {
 }
 
 func TestValidSSLProtocols(t *testing.T) {
-	testValidValues(t, newTestSSLConfig, "Protocols", "protocols", []string{"SSLv3", "TLSv1", "TLSv1 TLSv1.1"})
+	testValidValues(t, newTestSSLConfig, "Protocols", "protocols", []string{"SSLv3", "TLSv1", "TLSv1 TLSv1.1", "TLSv1.2 TLSv1.3"})
 }
 
 func TestInvalidSSLCiphers(t *testing.T) {

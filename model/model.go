@@ -211,7 +211,7 @@ func newCertificate(cert string, key string) *Certificate {
 // SSLConfig represents SSL-related configuration options.
 type SSLConfig struct {
 	Enforce           bool        `key:"enforce" constraint:"(?i)^(true|false)$"`
-	Protocols         string      `key:"protocols" constraint:"^((SSLv2|SSLv3|TLSv1|TLSv1\\.1|TLSv1\\.2)\\s*)+$"`
+	Protocols         string      `key:"protocols" constraint:"^((SSLv[2-3]|TLSv1(?:\\.[1-3])?)\\s*)+$"`
 	Ciphers           string      `key:"ciphers" constraint:"^(!?[A-Z][A-Z\\d\\+-]+:?)*$"`
 	SessionCache      string      `key:"sessionCache" constraint:"^(off|none|((builtin(:[1-9]\\d*)?|shared:\\w+:[1-9]\\d*[kKmM]?)\\s*){1,2})$"`
 	SessionTimeout    string      `key:"sessionTimeout" constraint:"^[1-9]\\d*(ms|[smhdwMy])?$"`
