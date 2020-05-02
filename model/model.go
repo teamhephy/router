@@ -212,7 +212,7 @@ func newCertificate(cert string, key string) *Certificate {
 type SSLConfig struct {
 	Enforce           bool        `key:"enforce" constraint:"(?i)^(true|false)$"`
 	Protocols         string      `key:"protocols" constraint:"^((SSLv[2-3]|TLSv1(?:\\.[1-3])?)\\s*)+$"`
-	Ciphers           string      `key:"ciphers" constraint:"^((([aek]?[A-Z\\d]{2,}([rd]|v\\d(\\.\\d)?)?([!+-]?\\b|\\B))+|([A-Z\\d][A-Z\\d-]+[A-Z\\d]([!+]?\\b|\\B))+)(:?@(STRENGTH|SECLEVEL=[0-5]))?(:([!+-]\\b)?|$))*$"`
+	Ciphers           string      `key:"ciphers" constraint:"^((([aek]?[A-Z\\d]{2,}([rd]|v\\d(\\.\\d)?)?([!+-]?\\b|\\B))+|(([A-Z\\d][A-Z\\d-]+|TLS_[A-Z\\d][A-Z\\d_]+)[A-Z\\d]([!+]?\\b|\\B))+)(:?@(STRENGTH|SECLEVEL=[0-5]))?(:([!+-]\\b)?|$))*$"`
 	SessionCache      string      `key:"sessionCache" constraint:"^(off|none|((builtin(:[1-9]\\d*)?|shared:\\w+:[1-9]\\d*[kKmM]?)\\s*){1,2})$"`
 	SessionTimeout    string      `key:"sessionTimeout" constraint:"^[1-9]\\d*(ms|[smhdwMy])?$"`
 	UseSessionTickets bool        `key:"useSessionTickets" constraint:"(?i)^(true|false)$"`
