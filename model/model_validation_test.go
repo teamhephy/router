@@ -304,11 +304,11 @@ func TestValidSSLProtocols(t *testing.T) {
 }
 
 func TestInvalidSSLCiphers(t *testing.T) {
-	testInvalidValues(t, newTestSSLConfig, "Ciphers", "ciphers", []string{"0", "-1", "foobar"})
+	testInvalidValues(t, newTestSSLConfig, "Ciphers", "ciphers", []string{"0", "-1", "foobar", "!DSS", "@STRENGTH"})
 }
 
 func TestValidSSLCiphers(t *testing.T) {
-	testValidValues(t, newTestSSLConfig, "Ciphers", "ciphers", []string{"DHE-RSA-AES256-SHA", "DHE-RSA-AES256-SHA:DHE-DSS-AES256-SHA:AES256-SHA", "EECDH+AES128:RSA+AES128:EECDH+AES256:RSA+AES256:EECDH+3DES:RSA+3DES:!MD5"})
+	testValidValues(t, newTestSSLConfig, "Ciphers", "ciphers", []string{"DHE-RSA-AES256-SHA", "DHE-RSA-AES256-SHA:DHE-DSS-AES256-SHA:AES256-SHA", "EECDH+AES128:RSA+AES128:EECDH+AES256:RSA+AES256:EECDH+3DES:RSA+3DES:!MD5", "DEFAULT@SECLEVEL=3:-TLSv1.2+DH", "TLS13:TLSv1.2", "SUITEB128ONLY", "kEECDH+aRSA!RC4"})
 }
 
 func TestInvalidSSLSessionCache(t *testing.T) {
