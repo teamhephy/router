@@ -375,6 +375,14 @@ func TestValidHSTSPreload(t *testing.T) {
 	testValidValues(t, newTestHSTSConfig, "Preload", "preload", []string{"true", "false", "TRUE", "FALSE"})
 }
 
+func TestInvalidEarlyDataMethods(t *testing.T) {
+	testInvalidValues(t, newTestSSLConfig, "EarlyDataMethods", "earlyDataMethods", []string{"0", "-1", "foobar", "GET||HEAD", "|GET", "GET|", "get|head"})
+}
+
+func TestValidEarlyDataMethods(t *testing.T) {
+	testValidValues(t, newTestSSLConfig, "EarlyDataMethods", "earlyDataMethods", []string{"", "GET", "GET|HEAD", "GET|HEAD|OPTIONS"})
+}
+
 func TestInvalidProxyBuffersEnabled(t *testing.T) {
 	testInvalidValues(t, newTestProxyBuffersConfig, "Enabled", "enabled", []string{"0", "-1", "foobar"})
 }

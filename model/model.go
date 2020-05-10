@@ -218,6 +218,7 @@ type SSLConfig struct {
 	UseSessionTickets bool        `key:"useSessionTickets" constraint:"(?i)^(true|false)$"`
 	BufferSize        string      `key:"bufferSize" constraint:"^[1-9]\\d*[kKmM]?$"`
 	HSTSConfig        *HSTSConfig `key:"hsts"`
+	EarlyDataMethods  string      `key:"earlyDataMethods" constraint:"^((GET|HEAD|POST|PUT|DELETE|PATCH|OPTIONS)(\\|\\b|$))*$"`
 	DHParam           string
 }
 
@@ -238,6 +239,7 @@ func newSSLConfig() *SSLConfig {
 		UseSessionTickets: true,
 		BufferSize:        "4k",
 		HSTSConfig:        newHSTSConfig(),
+		EarlyDataMethods:  "GET|HEAD|OPTIONS",
 	}
 }
 
