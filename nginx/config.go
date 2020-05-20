@@ -125,6 +125,13 @@ http {
 		'https' 'max-age={{ $hstsConfig.MaxAge }}{{ if $hstsConfig.IncludeSubDomains }}; includeSubDomains{{ end }}{{ if $hstsConfig.Preload }}; preload{{ end }}';
 	}
 	{{ end }}
+	{{ if ne $sslConfig.EarlyDataMethods "" }}
+	# Only allow early data (TLSv1.3 0-RTT) for select methods
+	map $request_method $ssl_block_early_data {
+		default $ssl_early_data;
+		"~^{{ $sslConfig.EarlyDataMethods }}$" 0;
+	}
+	{{ end }}
 
 	{{ if $routerConfig.RequestIDs }}
 		map $http_x_correlation_id $correlation_id {
@@ -168,6 +175,7 @@ http {
 			proxy_http_version 1.1;
 			proxy_set_header Upgrade $http_upgrade;
 			proxy_set_header Connection $connection_upgrade;
+			{{ if ne $sslConfig.EarlyDataMethods "" }}proxy_set_header Early-Data $ssl_early_data;{{ end }}
 			proxy_pass http://{{$routerConfig.DefaultServiceIP}}:80;
 		}
 	}
@@ -186,6 +194,7 @@ http {
 		ssl_protocols {{ $sslConfig.Protocols }};
 		{{ if ne $sslConfig.Ciphers "" }}ssl_ciphers {{ $sslConfig.Ciphers }};{{ end }}
 		ssl_prefer_server_ciphers on;
+		ssl_early_data {{ if ne $sslConfig.EarlyDataMethods "" }}on{{ else }}off{{ end }};
 		{{ if $routerConfig.PlatformCertificate }}
 		ssl_certificate /opt/router/ssl/platform.crt;
 		ssl_certificate_key /opt/router/ssl/platform.key;
@@ -261,6 +270,7 @@ http {
 		ssl_protocols {{ $sslConfig.Protocols }};
 		{{ if ne $sslConfig.Ciphers "" }}ssl_ciphers {{ $sslConfig.Ciphers }};{{ end }}
 		ssl_prefer_server_ciphers on;
+		ssl_early_data {{ if ne $sslConfig.EarlyDataMethods "" }}on{{ else }}off{{ end }};
 		ssl_certificate /opt/router/ssl/{{ $domain }}.crt;
 		ssl_certificate_key /opt/router/ssl/{{ $domain }}.key;
 		{{ if ne $sslConfig.SessionCache "" }}ssl_session_cache {{ $sslConfig.SessionCache }};
@@ -277,6 +287,10 @@ http {
 		{{ end }}
 
 		vhost_traffic_status_filter_by_set_key {{ $appConfig.Name }} application::*;
+
+		if ($ssl_block_early_data) {
+			return 425;
+		}
 
 		{{range $location := $appConfig.Locations}}
 			location {{ $location.Path }} {
@@ -304,6 +318,7 @@ http {
 				proxy_http_version 1.1;
 				proxy_set_header Upgrade $http_upgrade;
 				proxy_set_header Connection $connection_upgrade;
+				{{ if ne $sslConfig.EarlyDataMethods "" }}proxy_set_header Early-Data $ssl_early_data;{{ end }}
 				{{ if $routerConfig.RequestIDs }}
 				proxy_set_header X-Request-Id $request_id;
 				proxy_set_header X-Correlation-Id $correlation_id;

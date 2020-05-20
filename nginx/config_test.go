@@ -251,7 +251,7 @@ func TestDisableServerTokens(t *testing.T) {
 		WhitelistMode:           "extend",
 		SSLConfig: &model.SSLConfig{
 			Enforce:           false,
-			Protocols:         "TLSv1 TLSv1.1 TLSv1.2",
+			Protocols:         "TLSv1 TLSv1.1 TLSv1.2 TLSv1.3",
 			SessionTimeout:    "10m",
 			UseSessionTickets: true,
 			BufferSize:        "4k",

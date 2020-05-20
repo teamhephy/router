@@ -211,32 +211,35 @@ func newCertificate(cert string, key string) *Certificate {
 // SSLConfig represents SSL-related configuration options.
 type SSLConfig struct {
 	Enforce           bool        `key:"enforce" constraint:"(?i)^(true|false)$"`
-	Protocols         string      `key:"protocols" constraint:"^((SSLv2|SSLv3|TLSv1|TLSv1\\.1|TLSv1\\.2)\\s*)+$"`
-	Ciphers           string      `key:"ciphers" constraint:"^(!?[A-Z][A-Z\\d\\+-]+:?)*$"`
+	Protocols         string      `key:"protocols" constraint:"^((SSLv[2-3]|TLSv1(?:\\.[1-3])?)\\s*)+$"`
+	Ciphers           string      `key:"ciphers" constraint:"^((\\b[\\w.!+-]+\\b)+(:?@(STRENGTH|SECLEVEL=[0-5]))?(:([!+-]\\b)?|$))*(((\\b[\\w.+-]+\\b)+|(\\[(\\b[\\w.|+-]+\\b)+\\]))(:|$))*$"`
 	SessionCache      string      `key:"sessionCache" constraint:"^(off|none|((builtin(:[1-9]\\d*)?|shared:\\w+:[1-9]\\d*[kKmM]?)\\s*){1,2})$"`
 	SessionTimeout    string      `key:"sessionTimeout" constraint:"^[1-9]\\d*(ms|[smhdwMy])?$"`
 	UseSessionTickets bool        `key:"useSessionTickets" constraint:"(?i)^(true|false)$"`
 	BufferSize        string      `key:"bufferSize" constraint:"^[1-9]\\d*[kKmM]?$"`
 	HSTSConfig        *HSTSConfig `key:"hsts"`
+	EarlyDataMethods  string      `key:"earlyDataMethods" constraint:"^((GET|HEAD|POST|PUT|DELETE|PATCH|OPTIONS)(\\|\\b|$))*$"`
 	DHParam           string
 }
 
 func newSSLConfig() *SSLConfig {
 	return &SSLConfig{
 		Enforce:   false,
-		Protocols: "TLSv1 TLSv1.1 TLSv1.2",
+		Protocols: "TLSv1 TLSv1.1 TLSv1.2 TLSv1.3",
 		// Default cipher suite:
 		//  - Prefer 128-Bit over 256-Bit encryptions (lower overhead)
 		//  - Prefer GCM over EDH over RSA auth (for Forward Secrecy)
 		//  - Fallback to 112-Bit 3DES (mainly for IE 8 compatibility)
+		//  - Let clients choose between AES128-GCM and ChaCha20-Poly1305
 		// Compatible: Firefox 1, Chrome 1, IE 7, Opera 5, Safari 1, Windows XP IE8, Android 2.3, Java 7
 		// Incompatible: Windows XP IE6, Java 6
-		// Source: https://wiki.mozilla.org/Security/Server_Side_TLS (intermediate compatibility)
-		Ciphers:           "ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA:ECDHE-RSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA:DHE-RSA-AES256-SHA256:DHE-RSA-AES256-SHA:ECDHE-ECDSA-DES-CBC3-SHA:ECDHE-RSA-DES-CBC3-SHA:EDH-RSA-DES-CBC3-SHA:AES128-GCM-SHA256:AES256-GCM-SHA384:AES128-SHA256:AES256-SHA256:AES128-SHA:AES256-SHA:DES-CBC3-SHA:!DSS",
+		// Source: https://wiki.mozilla.org/Security/Server_Side_TLS (old backward compatibility)
+		Ciphers:           "[TLS_AES_128_GCM_SHA256|TLS_CHACHA20_POLY1305_SHA256]:TLS_AES_256_GCM_SHA384:[ECDHE-ECDSA-AES128-GCM-SHA256|ECDHE-ECDSA-CHACHA20-POLY1305|ECDHE-ECDSA-CHACHA20-POLY1305-OLD]:[ECDHE-RSA-AES128-GCM-SHA256|ECDHE-RSA-CHACHA20-POLY1305|ECDHE-RSA-CHACHA20-POLY1305-OLD]:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA:ECDHE-RSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA:DHE-RSA-AES256-SHA256:DHE-RSA-AES256-SHA:ECDHE-ECDSA-DES-CBC3-SHA:ECDHE-RSA-DES-CBC3-SHA:EDH-RSA-DES-CBC3-SHA:AES128-GCM-SHA256:AES256-GCM-SHA384:AES128-SHA256:AES256-SHA256:AES128-SHA:AES256-SHA:DES-CBC3-SHA",
 		SessionTimeout:    "10m",
 		UseSessionTickets: true,
 		BufferSize:        "4k",
 		HSTSConfig:        newHSTSConfig(),
+		EarlyDataMethods:  "GET|HEAD|OPTIONS",
 	}
 }
 
