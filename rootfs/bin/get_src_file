@@ -1,4 +1,5 @@
-#!/usr/bin/env bash
+#!/bin/sh
+set -e
 
 hash="$1"
 url="$2"
