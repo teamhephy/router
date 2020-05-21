@@ -1,4 +1,4 @@
-FROM hephy/base:v0.3.6 as modsecurity
+FROM hephy/base:v0.4.0 as modsecurity
 
 COPY /bin /bin
 WORKDIR /tmp/build
