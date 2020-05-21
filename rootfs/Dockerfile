@@ -21,7 +21,6 @@ RUN set -x && \
     ./configure \
       --prefix="$PREFIX" \
       --enable-silent-rules \
-      --enable-static=no \
       --disable-doxygen-doc \
       --disable-examples \
       --disable-dependency-tracking && \
@@ -31,7 +30,7 @@ RUN set -x && \
         unicode.mapping \
         modsecurity.conf-recommended
 
-FROM hephy/base:v0.3.6 as openssl
+FROM hephy/base:v0.4.0 as openssl
 
 COPY /bin /bin
 WORKDIR /tmp/build
@@ -59,7 +58,7 @@ RUN set -x && \
     make -j`nproc` && \
     make install_sw
 
-FROM hephy/base:v0.3.6
+FROM hephy/base:v0.4.0
 
 RUN adduser --system \
 	--shell /bin/bash \
