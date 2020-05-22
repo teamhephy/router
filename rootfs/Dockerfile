@@ -1,4 +1,4 @@
-FROM hephy/base:v0.4.0 as modsecurity
+FROM hephy/base:v0.4.1 as modsecurity
 
 COPY /bin /bin
 WORKDIR /tmp/build
@@ -30,7 +30,7 @@ RUN set -x && \
         unicode.mapping \
         modsecurity.conf-recommended
 
-FROM hephy/base:v0.4.0 as openssl
+FROM hephy/base:v0.4.1 as openssl
 
 COPY /bin /bin
 WORKDIR /tmp/build
@@ -41,7 +41,7 @@ RUN set -x && \
         g++ make patch perl
 
 RUN set -x && \
-    export OPENSSL_VERSION=1.1.1g OPENSSL_SIGNING_KEY=0E604491 BUILD_PATH=$PWD PREFIX=/usr/local && \
+    export OPENSSL_VERSION=1.1.1g OPENSSL_SIGNING_KEY=8657ABB260F056B1E5190839D9C4D26D0E604491 BUILD_PATH=$PWD PREFIX=/usr/local && \
     get_src_gpg $OPENSSL_SIGNING_KEY "https://www.openssl.org/source/openssl-$OPENSSL_VERSION.tar.gz" && \
     # ChaCha20-Poly1305 Draft Support for older Android versions
     get_src_file 5e082d46544915b0a580fe71a5e53cb22f535c7dc67a35221d292316701dc085 \
@@ -58,7 +58,7 @@ RUN set -x && \
     make -j`nproc` && \
     make install_sw
 
-FROM hephy/base:v0.4.0
+FROM hephy/base:v0.4.1
 
 RUN adduser --system \
 	--shell /bin/bash \
@@ -74,14 +74,14 @@ COPY /bin /bin
 
 RUN set -x && \
     buildDeps='gcc make patch libgeoip-dev libmaxminddb-dev libpcre3-dev' \
-    runtimeDeps='ca-certificates libcurl3 libxml2 libpcre3 libgeoip1 libmaxminddb0 libfuzzy2' && \
+    runtimeDeps='ca-certificates libcurl4 libxml2 libpcre3 libgeoip1 libmaxminddb0 libfuzzy2' && \
     apt-get update && \
     apt-get install -y --no-install-recommends \
         $buildDeps \
         $runtimeDeps && \
     # Remove openssl binaries from base image, will be provided by our custom build
     apt-get remove -y openssl && \
-    export NGINX_VERSION=1.18.0 SIGNING_KEY=A1C052F8 \
+    export NGINX_VERSION=1.18.0 SIGNING_KEY=B0F4253373F8F6F510D42178520A9993A1C052F8 \
            CLOUDFLARE_ZLIB_VERSION=372bcd151c901418c2721232bf09dc9cdbebafb5 \
            VTS_VERSION=0.1.18 GEOIP2_VERSION=3.3 \
            MOD_SECURITY_NGINX_VERSION=e50e43ee4cc87565922ed98b1b6c72751019c326 \
