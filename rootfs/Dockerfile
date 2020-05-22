@@ -38,11 +38,13 @@ WORKDIR /tmp/build
 RUN set -x && \
     apt-get update && \
     apt-get install -y --no-install-recommends \
-        g++ make patch perl
+        build-essential fakeroot software-properties-common devscripts
 
 RUN set -x && \
-    export OPENSSL_VERSION=1.1.1g OPENSSL_SIGNING_KEY=8657ABB260F056B1E5190839D9C4D26D0E604491 BUILD_PATH=$PWD PREFIX=/usr/local && \
-    get_src_gpg $OPENSSL_SIGNING_KEY "https://www.openssl.org/source/openssl-$OPENSSL_VERSION.tar.gz" && \
+    export OPENSSL_VERSION=1.1.1g BUILD_PATH=$PWD DEBEMAIL="Team Hephy <team@teamhephy.com>" && \
+    add-apt-repository --enable-source ppa:ondrej/nginx && \
+    apt-get build-dep -y openssl=$OPENSSL_VERSION && \
+    apt-get source -y openssl=$OPENSSL_VERSION && \
     # ChaCha20-Poly1305 Draft Support for older Android versions
     get_src_file 5e082d46544915b0a580fe71a5e53cb22f535c7dc67a35221d292316701dc085 \
                  https://raw.githubusercontent.com/hakasenyang/openssl-patch/3ea9038/openssl-1.1.1f-chacha_draft.patch && \
@@ -50,13 +52,24 @@ RUN set -x && \
     get_src_file 04f682c36405a908247c27e317fb0f5f5bb19cbac9699f5afa21fd81511e6be2 \
                  https://raw.githubusercontent.com/hakasenyang/openssl-patch/e3bd4a8/openssl-equal-1.1.1e-dev_ciphers.patch && \
     cd "$BUILD_PATH/openssl-$OPENSSL_VERSION" && \
-    patch -p1 -i "$BUILD_PATH/openssl-1.1.1f-chacha_draft.patch" && \
-    patch -p1 -i "$BUILD_PATH/openssl-equal-1.1.1e-dev_ciphers.patch" && \
-    ./config --prefix=/usr/local \
-      --openssldir=/etc/ssl \
-      shared enable-weak-ssl-ciphers && \
-    make -j`nproc` && \
-    make install_sw
+    sed -i '/^CONFARGS\s*=/ s/ enable-unit-test//' debian/rules && \
+    dch -l hephy "Disable unit tests" && \
+    sed -i '/^CONFARGS\s*=/ s/$/ enable-weak-ssl-ciphers/' debian/rules && \
+    dch -l hephy "Enable weak SSL ciphers" && \
+    cp "$BUILD_PATH/openssl-equal-1.1.1e-dev_ciphers.patch" debian/patches/ && \
+    echo openssl-equal-1.1.1e-dev_ciphers.patch >> debian/patches/series && \
+    dch -l hephy "Add BoringSSL port of equal preference cipher groups" && \
+    cp "$BUILD_PATH/openssl-1.1.1f-chacha_draft.patch" debian/patches/ && \
+    echo openssl-1.1.1f-chacha_draft.patch >> debian/patches/series && \
+    # Add missing libcrypto 1.1.1f symbol mapping
+    sed -i '/^ \*@OPENSSL_1_1_1e 1\.1\.1e/p; s/e/f/g' debian/libssl1.1.symbols && \
+    dch -l hephy "Add ChaCha-Draft cipher support" && \
+    dch -r " " && \
+    DEB_BUILD_OPTIONS=nocheck dpkg-buildpackage -uc -b -rfakeroot && \
+    cd .. && \
+    dpkg-scanpackages . > Packages && \
+    mkdir ../repo && \
+    mv Packages *.deb ../repo
 
 FROM hephy/base:v0.4.1
 
@@ -68,19 +81,18 @@ RUN adduser --system \
 	router
 
 COPY --from=modsecurity /usr/local /usr/local
-COPY --from=openssl /usr/local /usr/local
+COPY --from=openssl /tmp/repo /usr/local/repo
 
 COPY /bin /bin
 
 RUN set -x && \
-    buildDeps='gcc make patch libgeoip-dev libmaxminddb-dev libpcre3-dev' \
-    runtimeDeps='ca-certificates libcurl4 libxml2 libpcre3 libgeoip1 libmaxminddb0 libfuzzy2' && \
+    buildDeps='gcc make patch libgeoip-dev libmaxminddb-dev libpcre3-dev libssl-dev' \
+    runtimeDeps='ca-certificates libcurl4 libxml2 libpcre3 libgeoip1 libmaxminddb0 libfuzzy2 libssl1.1 openssl' && \
+    echo 'deb [trusted=yes] file:/usr/local/repo ./' >> /etc/apt/sources.list && \
     apt-get update && \
     apt-get install -y --no-install-recommends \
         $buildDeps \
         $runtimeDeps && \
-    # Remove openssl binaries from base image, will be provided by our custom build
-    apt-get remove -y openssl && \
     export NGINX_VERSION=1.18.0 SIGNING_KEY=B0F4253373F8F6F510D42178520A9993A1C052F8 \
            CLOUDFLARE_ZLIB_VERSION=372bcd151c901418c2721232bf09dc9cdbebafb5 \
            VTS_VERSION=0.1.18 GEOIP2_VERSION=3.3 \
@@ -88,10 +100,6 @@ RUN set -x && \
            OWASP_MOD_SECURITY_CRS_VERSION=cf57fd53de06b87b90d2cc5d61d602df81b2dd70 \
            BUILD_PATH=/tmp/build PREFIX=/opt/router && \
     ldconfig && \
-    # Provide custom openssl binaries in standard /usr/bin location
-    update-alternatives --verbose \
-      --install /usr/bin/openssl openssl /usr/local/bin/openssl 1 \
-      --slave /usr/bin/c_rehash c_rehash /usr/local/bin/c_rehash && \
     rm -rf "$PREFIX" && \
     mkdir "$PREFIX" && \
     mkdir "$BUILD_PATH" && \
