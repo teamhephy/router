@@ -18,6 +18,7 @@ RUN set -x && \
     get_src b4231177dd80b4e076b228e57d498670113b69d445bab86db25f65346c24db22 \
             "https://github.com/SpiderLabs/ModSecurity/releases/download/v$MOD_SECURITY_VERSION/modsecurity-v$MOD_SECURITY_VERSION.tar.gz" && \
     cd "$BUILD_PATH/modsecurity-v$MOD_SECURITY_VERSION" && \
+    ldconfig && \
     ./configure \
       --prefix="$PREFIX" \
       --enable-silent-rules \
@@ -87,7 +88,7 @@ COPY /bin /bin
 
 RUN set -x && \
     buildDeps='gcc make patch libgeoip-dev libmaxminddb-dev libpcre3-dev libssl-dev' \
-    runtimeDeps='ca-certificates libcurl4 libxml2 libpcre3 libgeoip1 libmaxminddb0 libfuzzy2 libssl1.1 openssl' && \
+    runtimeDeps='ca-certificates libcurl4 libxml2 libpcre3 libgeoip1 libmaxminddb0 libfuzzy2 libssl1.1 openssl libyajl2' && \
     echo 'deb [trusted=yes] file:/usr/local/repo ./' >> /etc/apt/sources.list && \
     apt-get update && \
     apt-get install -y --no-install-recommends \
