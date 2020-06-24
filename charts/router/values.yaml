@@ -1,4 +1,4 @@
-org: "deisci"
+org: "hephy"
 pull_policy: "Always"
 docker_tag: canary
 platform_domain: ""
