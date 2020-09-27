@@ -9,14 +9,13 @@ import (
 
 	"github.com/teamhephy/router/utils"
 	modelerUtility "github.com/teamhephy/router/utils/modeler"
-	"k8s.io/client-go/1.4/kubernetes"
-	"k8s.io/client-go/1.4/pkg/api"
-	"k8s.io/client-go/1.4/pkg/api/errors"
-	"k8s.io/client-go/1.4/pkg/api/v1"
-	"k8s.io/client-go/1.4/pkg/apis/extensions/v1beta1"
-	v1beta1ext "k8s.io/client-go/1.4/pkg/apis/extensions/v1beta1"
-	"k8s.io/client-go/1.4/pkg/fields"
-	"k8s.io/client-go/1.4/pkg/labels"
+	appv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/fields"
+	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/client-go/kubernetes"
 )
 
 const (
@@ -28,12 +27,12 @@ const (
 var (
 	namespace   = utils.GetOpt("POD_NAMESPACE", "default")
 	modeler     = modelerUtility.NewModeler(prefix, modelerFieldTag, modelerConstraintTag, true)
-	listOptions api.ListOptions
+	listOptions metav1.ListOptions
 )
 
 func init() {
 	labelMap := labels.Set{fmt.Sprintf("%s/routable", prefix): "true"}
-	listOptions = api.ListOptions{LabelSelector: labelMap.AsSelector(), FieldSelector: fields.Everything()}
+	listOptions = metav1.ListOptions{LabelSelector: labelMap.AsSelector().String(), FieldSelector: fields.Everything().String()}
 }
 
 // RouterConfig is the primary type used to encapsulate all router configuration.
@@ -346,16 +345,16 @@ func Build(kubeClient *kubernetes.Clientset) (*RouterConfig, error) {
 	return routerConfig, nil
 }
 
-func getDeployment(kubeClient *kubernetes.Clientset) (*v1beta1ext.Deployment, error) {
-	deployment, err := kubeClient.Extensions().Deployments(namespace).Get("deis-router")
+func getDeployment(kubeClient *kubernetes.Clientset) (*appv1.Deployment, error) {
+	deployment, err := kubeClient.AppsV1().Deployments(namespace).Get("deis-router", metav1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}
 	return deployment, nil
 }
 
-func getAppServices(kubeClient *kubernetes.Clientset) (*v1.ServiceList, error) {
-	serviceClient := kubeClient.Services(api.NamespaceAll)
+func getAppServices(kubeClient *kubernetes.Clientset) (*corev1.ServiceList, error) {
+	serviceClient := kubeClient.CoreV1().Services(metav1.NamespaceAll)
 	services, err := serviceClient.List(listOptions)
 	if err != nil {
 		return nil, err
@@ -365,14 +364,14 @@ func getAppServices(kubeClient *kubernetes.Clientset) (*v1.ServiceList, error) {
 
 // getBuilderService will return the service named "deis-builder" from the same namespace as
 // the router, but will return nil (without error) if no such service exists.
-func getBuilderService(kubeClient *kubernetes.Clientset) (*v1.Service, error) {
-	serviceClient := kubeClient.Services(namespace)
-	service, err := serviceClient.Get("deis-builder")
+func getBuilderService(kubeClient *kubernetes.Clientset) (*corev1.Service, error) {
+	serviceClient := kubeClient.CoreV1().Services(namespace)
+	service, err := serviceClient.Get("deis-builder", metav1.GetOptions{})
 	if err != nil {
 		statusErr, ok := err.(*errors.StatusError)
 		// If the issue is just that no deis-builder was found, that's ok.
 		if ok && statusErr.Status().Code == 404 {
-			// We'll just return nil instead of a found *api.Service.
+			// We'll just return nil instead of a found *metav1.Service.
 			return nil, nil
 		}
 		return nil, err
@@ -380,14 +379,14 @@ func getBuilderService(kubeClient *kubernetes.Clientset) (*v1.Service, error) {
 	return service, nil
 }
 
-func getSecret(kubeClient *kubernetes.Clientset, name string, ns string) (*v1.Secret, error) {
-	secretClient := kubeClient.Secrets(ns)
-	secret, err := secretClient.Get(name)
+func getSecret(kubeClient *kubernetes.Clientset, name string, ns string) (*corev1.Secret, error) {
+	secretClient := kubeClient.CoreV1().Secrets(ns)
+	secret, err := secretClient.Get(name, metav1.GetOptions{})
 	if err != nil {
 		statusErr, ok := err.(*errors.StatusError)
 		// If the issue is just that no such secret was found, that's ok.
 		if ok && statusErr.Status().Code == 404 {
-			// We'll just return nil instead of a found *api.Secret
+			// We'll just return nil instead of a found *metav1.Secret
 			return nil, nil
 		}
 		return nil, err
@@ -395,7 +394,7 @@ func getSecret(kubeClient *kubernetes.Clientset, name string, ns string) (*v1.Se
 	return secret, nil
 }
 
-func build(kubeClient *kubernetes.Clientset, routerDeployment *v1beta1ext.Deployment, platformCertSecret *v1.Secret, dhParamSecret *v1.Secret, appServices *v1.ServiceList, builderService *v1.Service) (*RouterConfig, error) {
+func build(kubeClient *kubernetes.Clientset, routerDeployment *appv1.Deployment, platformCertSecret *corev1.Secret, dhParamSecret *corev1.Secret, appServices *corev1.ServiceList, builderService *corev1.Service) (*RouterConfig, error) {
 	routerConfig, err := buildRouterConfig(routerDeployment, platformCertSecret, dhParamSecret)
 	if err != nil {
 		return nil, err
@@ -461,7 +460,7 @@ func addRootLocations(appConfigs []*AppConfig) {
 	}
 }
 
-func buildRouterConfig(routerDeployment *v1beta1.Deployment, platformCertSecret *v1.Secret, dhParamSecret *v1.Secret) (*RouterConfig, error) {
+func buildRouterConfig(routerDeployment *appv1.Deployment, platformCertSecret *corev1.Secret, dhParamSecret *corev1.Secret) (*RouterConfig, error) {
 	routerConfig, err := newRouterConfig()
 	if err != nil {
 		return nil, err
@@ -487,7 +486,7 @@ func buildRouterConfig(routerDeployment *v1beta1.Deployment, platformCertSecret 
 	return routerConfig, nil
 }
 
-func buildAppConfig(kubeClient *kubernetes.Clientset, service v1.Service, routerConfig *RouterConfig) (*AppConfig, error) {
+func buildAppConfig(kubeClient *kubernetes.Clientset, service corev1.Service, routerConfig *RouterConfig) (*AppConfig, error) {
 	appConfig, err := newAppConfig(routerConfig)
 	if err != nil {
 		return nil, err
@@ -539,8 +538,8 @@ func buildAppConfig(kubeClient *kubernetes.Clientset, service v1.Service, router
 		}
 	}
 	appConfig.ServiceIP = service.Spec.ClusterIP
-	endpointsClient := kubeClient.Endpoints(service.Namespace)
-	endpoints, err := endpointsClient.Get(service.Name)
+	endpointsClient := kubeClient.CoreV1().Endpoints(service.Namespace)
+	endpoints, err := endpointsClient.Get(service.Name, metav1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}
@@ -548,7 +547,7 @@ func buildAppConfig(kubeClient *kubernetes.Clientset, service v1.Service, router
 	return appConfig, nil
 }
 
-func buildBuilderConfig(service *v1.Service) (*BuilderConfig, error) {
+func buildBuilderConfig(service *corev1.Service) (*BuilderConfig, error) {
 	builderConfig := newBuilderConfig()
 	builderConfig.ServiceIP = service.Spec.ClusterIP
 	err := modeler.MapToModel(service.Annotations, "nginx", builderConfig)
@@ -558,7 +557,7 @@ func buildBuilderConfig(service *v1.Service) (*BuilderConfig, error) {
 	return builderConfig, nil
 }
 
-func buildCertificate(certSecret *v1.Secret, context string) (*Certificate, error) {
+func buildCertificate(certSecret *corev1.Secret, context string) (*Certificate, error) {
 	cert, ok := certSecret.Data["tls.crt"]
 	// If no cert is found in the secret, warn and return nil
 	if !ok {
@@ -576,7 +575,7 @@ func buildCertificate(certSecret *v1.Secret, context string) (*Certificate, erro
 	return newCertificate(certStr, keyStr), nil
 }
 
-func buildDHParam(dhParamSecret *v1.Secret) (string, error) {
+func buildDHParam(dhParamSecret *corev1.Secret) (string, error) {
 	dhParam, ok := dhParamSecret.Data["dhparam"]
 	// If no dhparam is found in the secret, warn and return ""
 	if !ok {
