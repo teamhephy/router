@@ -1,5 +1,5 @@
 {{- if not .Values.global.experimental_native_ingress }}
-apiVersion: extensions/v1beta1
+apiVersion: {{ template "APIVersion" . }}
 kind: Deployment
 metadata:
   name: deis-router
@@ -31,7 +31,7 @@ spec:
       serviceAccount: deis-router
       containers:
       - name: deis-router
-        image: quay.io/{{.Values.org}}/router:{{.Values.docker_tag}}
+        image: {{.Values.org}}/router:{{.Values.docker_tag}}
         imagePullPolicy: {{.Values.pull_policy}}
 {{- if or (.Values.limits_cpu) (.Values.limits_memory) (.Values.requests_cpu) (.Values.requests_memory)}}
         resources:

@@ -1,7 +1,6 @@
 name: router
 home: https://github.com/teamhephy/router
 version: <Will be populated by the ci before publishing the chart>
-description: Edge router for Deis Workflow.
+description: Edge router for Hephy Workflow.
 maintainers:
-  - name: Deis Team
-    email: engineering@deis.com
+  - email: team@teamhephy.com
