@@ -4,9 +4,10 @@ import (
 	"reflect"
 	"testing"
 
-	"k8s.io/client-go/1.4/pkg/api/v1"
-	"k8s.io/client-go/1.4/pkg/apis/extensions/v1beta1"
-	"k8s.io/client-go/1.4/pkg/util/intstr"
+	appv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
 const (
@@ -20,8 +21,8 @@ const (
 func TestBuildRouterConfig(t *testing.T) {
 	// Ensure a valid Router Deployment, Platform Cert, and DHParam result in the expected RouterConfig.
 	replicas := int32(1)
-	routerDeployment := v1beta1.Deployment{
-		ObjectMeta: v1.ObjectMeta{
+	routerDeployment := appv1.Deployment{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:      routerName,
 			Namespace: deisNamespace,
 			Annotations: map[string]string{
@@ -34,21 +35,21 @@ func TestBuildRouterConfig(t *testing.T) {
 				"heritage": "deis",
 			},
 		},
-		Spec: v1beta1.DeploymentSpec{
-			Strategy: v1beta1.DeploymentStrategy{
-				Type:          v1beta1.RollingUpdateDeploymentStrategyType,
-				RollingUpdate: &v1beta1.RollingUpdateDeployment{},
+		Spec: appv1.DeploymentSpec{
+			Strategy: appv1.DeploymentStrategy{
+				Type:          appv1.RollingUpdateDeploymentStrategyType,
+				RollingUpdate: &appv1.RollingUpdateDeployment{},
 			},
 			Replicas: &replicas,
-			Selector: &v1beta1.LabelSelector{MatchLabels: map[string]string{"app": routerName}},
-			Template: v1.PodTemplateSpec{
-				ObjectMeta: v1.ObjectMeta{
+			Selector: &metav1.LabelSelector{MatchLabels: map[string]string{"app": routerName}},
+			Template: corev1.PodTemplateSpec{
+				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
 						"app": routerName,
 					},
 				},
-				Spec: v1.PodSpec{
-					Containers: []v1.Container{
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{
 						{
 							Image: "deis/router",
 						},
@@ -58,27 +59,27 @@ func TestBuildRouterConfig(t *testing.T) {
 		},
 	}
 
-	platformCertSecret := v1.Secret{
-		ObjectMeta: v1.ObjectMeta{
+	platformCertSecret := corev1.Secret{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:      platformCertName,
 			Namespace: deisNamespace,
 		},
-		Type: v1.SecretTypeOpaque,
+		Type: corev1.SecretTypeOpaque,
 		Data: map[string][]byte{
 			"tls.crt": []byte("foo"),
 			"tls.key": []byte("bar"),
 		},
 	}
 
-	dhParamSecret := v1.Secret{
-		ObjectMeta: v1.ObjectMeta{
+	dhParamSecret := corev1.Secret{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:      dhParamName,
 			Namespace: deisNamespace,
 			Labels: map[string]string{
 				"heritage": "deis",
 			},
 		},
-		Type: v1.SecretTypeOpaque,
+		Type: corev1.SecretTypeOpaque,
 		Data: map[string][]byte{
 			"dhparam": []byte("bizbaz"),
 		},
@@ -128,8 +129,8 @@ func TestBuildRouterConfig(t *testing.T) {
 
 func TestBuildBuilderConfig(t *testing.T) {
 	// Ensure a Builder Service with annotations returns the expected BuilderConfig.
-	builderService := v1.Service{
-		ObjectMeta: v1.ObjectMeta{
+	builderService := corev1.Service{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:      builderName,
 			Namespace: deisNamespace,
 			Labels: map[string]string{
@@ -139,8 +140,8 @@ func TestBuildBuilderConfig(t *testing.T) {
 				"router.deis.io/nginx.connectTimeout": "20s",
 			},
 		},
-		Spec: v1.ServiceSpec{
-			Ports: []v1.ServicePort{
+		Spec: corev1.ServiceSpec{
+			Ports: []corev1.ServicePort{
 				{
 					Name: "ssh",
 					Port: int32(2222),
@@ -183,12 +184,12 @@ func TestBuildBuilderConfig(t *testing.T) {
 
 func TestBuildCertificate(t *testing.T) {
 	// Ensure a valid Cert Secret returns the expected certificate.
-	validCertSecret := v1.Secret{
-		ObjectMeta: v1.ObjectMeta{
+	validCertSecret := corev1.Secret{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:      platformCertName,
 			Namespace: deisNamespace,
 		},
-		Type: v1.SecretTypeOpaque,
+		Type: corev1.SecretTypeOpaque,
 		Data: map[string][]byte{
 			"tls.crt": []byte("foo"),
 			"tls.key": []byte("bar"),
@@ -209,12 +210,12 @@ func TestBuildCertificate(t *testing.T) {
 	}
 
 	// Ensure an invalid Cert Secret returns nil.
-	invalidCertSecret := v1.Secret{
-		ObjectMeta: v1.ObjectMeta{
+	invalidCertSecret := corev1.Secret{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:      platformCertName,
 			Namespace: deisNamespace,
 		},
-		Type: v1.SecretTypeOpaque,
+		Type: corev1.SecretTypeOpaque,
 		Data: map[string][]byte{
 			"a": []byte("foo"),
 			"b": []byte("bar"),
@@ -233,12 +234,12 @@ func TestBuildCertificate(t *testing.T) {
 func TestBuildDHParam(t *testing.T) {
 	// Ensure a valid DHParam Secret returns the expected DHParam string.
 	expectedDHParam := "bizbaz"
-	dhParamSecret := v1.Secret{
-		ObjectMeta: v1.ObjectMeta{
+	dhParamSecret := corev1.Secret{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:      dhParamName,
 			Namespace: deisNamespace,
 		},
-		Type: v1.SecretTypeOpaque,
+		Type: corev1.SecretTypeOpaque,
 		Data: map[string][]byte{
 			"dhparam": []byte(expectedDHParam),
 		},
@@ -253,12 +254,12 @@ func TestBuildDHParam(t *testing.T) {
 	}
 
 	// Ensure an invalid DHParam Secret returns an empty string.
-	invalidDHParamSecret := v1.Secret{
-		ObjectMeta: v1.ObjectMeta{
+	invalidDHParamSecret := corev1.Secret{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:      dhParamName,
 			Namespace: deisNamespace,
 		},
-		Type: v1.SecretTypeOpaque,
+		Type: corev1.SecretTypeOpaque,
 		Data: map[string][]byte{
 			"foo": []byte("bar"),
 		},

@@ -6,9 +6,9 @@ import (
 
 	"github.com/teamhephy/router/model"
 	"github.com/teamhephy/router/nginx"
-	"k8s.io/client-go/1.4/kubernetes"
-	"k8s.io/client-go/1.4/pkg/util/flowcontrol"
-	"k8s.io/client-go/1.4/rest"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
+	"k8s.io/client-go/util/flowcontrol"
 )
 
 func main() {
