@@ -3,8 +3,8 @@ flatten: true
 ignore:
   - k8s.io/kubernetes
 import:
-- package: k8s.io/client-go/1.4
-  version: 0b62e254fe853d89b1d8d3445bbdab11bcc11bc3
+- package: k8s.io/client-go
+  version: release-14.0
 - package: github.com/Masterminds/sprig
   version: ~1.1
 - package: speter.net/go/exp/math/dec/inf
