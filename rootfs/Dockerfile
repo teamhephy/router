@@ -39,20 +39,29 @@ WORKDIR /tmp/build
 RUN set -x && \
     apt-get update && \
     apt-get install -y --no-install-recommends \
-        build-essential fakeroot software-properties-common devscripts
+        build-essential fakeroot devscripts equivs
 
 RUN set -x && \
-    export OPENSSL_VERSION=1.1.1g BUILD_PATH=$PWD DEBEMAIL="Team Hephy <team@teamhephy.com>" && \
-    add-apt-repository --enable-source ppa:ondrej/nginx && \
-    apt-get build-dep -y openssl=$OPENSSL_VERSION && \
-    apt-get source -y openssl=$OPENSSL_VERSION && \
+    export OPENSSL_VERSION=1.1.1k OPENSSL_VERSION_DEB=1.1.1k-1 BUILD_PATH=$PWD DEBEMAIL="Team Hephy <team@teamhephy.com>" && \
+    get_src_file b070d0422d0d666eaef5ca86b69b59e15eee8287de8183b2375ca28e038adbf1 \
+                 http://deb.debian.org/debian/pool/main/o/openssl/openssl_$OPENSSL_VERSION_DEB.dsc && \
+    get_src_file 892a0875b9872acd04a9fde79b1f943075d5ea162415de3047c327df33fbaee5 \
+                 http://deb.debian.org/debian/pool/main/o/openssl/openssl_$OPENSSL_VERSION.orig.tar.gz && \
+    get_src_file addeaa197444a62c6063d7f819512c2c22b42141dec9d8ec3bff7e4518e1d1c9 \
+                 http://deb.debian.org/debian/pool/main/o/openssl/openssl_$OPENSSL_VERSION.orig.tar.gz.asc && \
+    get_src_file 7563beb68e87bae24369dfd7569ded77ee1bc22d0d890b94c85581dc86714fa1 \
+                 http://deb.debian.org/debian/pool/main/o/openssl/openssl_$OPENSSL_VERSION_DEB.debian.tar.xz && \
+    dpkg-source -x openssl_$OPENSSL_VERSION_DEB.dsc && \
     # ChaCha20-Poly1305 Draft Support for older Android versions
-    get_src_file 5e082d46544915b0a580fe71a5e53cb22f535c7dc67a35221d292316701dc085 \
-                 https://raw.githubusercontent.com/hakasenyang/openssl-patch/3ea9038/openssl-1.1.1f-chacha_draft.patch && \
+    get_src_file 8d3e4e89a957ad8678c5f403f0969abeffc3fe96507b648cd87227bd835c3c30 \
+                 https://raw.githubusercontent.com/hakasenyang/openssl-patch/1b03526/openssl-1.1.1i-chacha_draft.patch && \
     # Allow setting equal preference and TLSv1.3 ciphers in NGINX
     get_src_file 04f682c36405a908247c27e317fb0f5f5bb19cbac9699f5afa21fd81511e6be2 \
                  https://raw.githubusercontent.com/hakasenyang/openssl-patch/e3bd4a8/openssl-equal-1.1.1e-dev_ciphers.patch && \
     cd "$BUILD_PATH/openssl-$OPENSSL_VERSION" && \
+    sed -i '/^Build-Depends:/ s/ debhelper-compat (= 12)/ debhelper-compat (= 11)/' debian/control && \
+    dch -l hephy "Fix build deps for Ubuntu Bionic" && \
+    mk-build-deps -i -t "apt-get -y --no-install-recommends" && \
     sed -i '/^CONFARGS\s*=/ s/ enable-unit-test//' debian/rules && \
     dch -l hephy "Disable unit tests" && \
     sed -i '/^CONFARGS\s*=/ s/$/ enable-weak-ssl-ciphers/' debian/rules && \
@@ -60,10 +69,8 @@ RUN set -x && \
     cp "$BUILD_PATH/openssl-equal-1.1.1e-dev_ciphers.patch" debian/patches/ && \
     echo openssl-equal-1.1.1e-dev_ciphers.patch >> debian/patches/series && \
     dch -l hephy "Add BoringSSL port of equal preference cipher groups" && \
-    cp "$BUILD_PATH/openssl-1.1.1f-chacha_draft.patch" debian/patches/ && \
-    echo openssl-1.1.1f-chacha_draft.patch >> debian/patches/series && \
-    # Add missing libcrypto 1.1.1f symbol mapping
-    sed -i '/^ \*@OPENSSL_1_1_1e 1\.1\.1e/p; s/e/f/g' debian/libssl1.1.symbols && \
+    cp "$BUILD_PATH/openssl-1.1.1i-chacha_draft.patch" debian/patches/ && \
+    echo openssl-1.1.1i-chacha_draft.patch >> debian/patches/series && \
     dch -l hephy "Add ChaCha-Draft cipher support" && \
     dch -r " " && \
     DEB_BUILD_OPTIONS=nocheck dpkg-buildpackage -uc -b -rfakeroot && \
