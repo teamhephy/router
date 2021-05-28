@@ -2,7 +2,9 @@ package main
 
 import (
 	"log"
+	"os"
 	"reflect"
+	"strconv"
 
 	"github.com/teamhephy/router/model"
 	"github.com/teamhephy/router/nginx"
@@ -16,6 +18,14 @@ func main() {
 	cfg, err := rest.InClusterConfig()
 	if err != nil {
 		log.Fatalf("Failed to create config: %v", err)
+	}
+	if qps, err := strconv.ParseFloat(os.Getenv("RATE_LIMIT_QPS"), 32); err == nil {
+		cfg.QPS = float32(qps)
+		log.Printf("INFO: Setting QPS %f\n", qps)
+	}
+	if burst, err := strconv.Atoi(os.Getenv("RATE_LIMIT_BURST")); err == nil {
+		cfg.Burst = burst
+		log.Printf("INFO: Setting Burst %d\n", burst)
 	}
 	kubeClient, err := kubernetes.NewForConfig(cfg)
 	if err != nil {
