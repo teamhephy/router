@@ -2,8 +2,8 @@ package main
 
 import (
 	"log"
-	"reflect"
 	"os"
+	"reflect"
 	"strconv"
 
 	"github.com/teamhephy/router/model"
