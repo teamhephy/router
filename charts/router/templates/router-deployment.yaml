@@ -60,6 +60,14 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
+{{- if (.Values.rate_limit.qps) }}
+        - name: RATE_LIMIT_QPS
+          value: {{.Values.rate_limit.qps}}
+{{- end}}
+{{- if (.Values.rate_limit.burst) }}
+        - name: RATE_LIMIT_BURST
+          value: {{.Values.rate_limit.burst}}
+{{- end}}
         ports:
         - containerPort: 8080
 {{- if .Values.host_port.enabled }}
