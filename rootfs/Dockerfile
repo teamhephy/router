@@ -1,4 +1,4 @@
-FROM hephy/base:v0.4.1 as modsecurity
+FROM hephy/base:v0.5.0 as modsecurity
 
 COPY /bin /bin
 WORKDIR /tmp/build
@@ -31,7 +31,7 @@ RUN set -x && \
         unicode.mapping \
         modsecurity.conf-recommended
 
-FROM hephy/base:v0.4.1 as openssl
+FROM hephy/base:v0.5.0 as openssl
 
 COPY /bin /bin
 WORKDIR /tmp/build
@@ -79,7 +79,7 @@ RUN set -x && \
     mkdir ../repo && \
     mv Packages *.deb ../repo
 
-FROM hephy/base:v0.4.1
+FROM hephy/base:v0.5.0
 
 RUN adduser --system \
 	--shell /bin/bash \
