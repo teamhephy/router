@@ -79,13 +79,13 @@ The entire developer workflow for anyone hacking on the router is implemented as
 
 #### Setup:
 
-To "bootstrap" the development environment:
+To "vendor" the development environment:
 
 ```
-$ make bootstrap
+$ make vendor
 ```
 
-In router's case, this step carries out some extensive dependency management using glide within the containerized development environment.  Because the router leverages the Kubernetes API, which in turn has in excess of one hundred dependencies, this step can take quite some time.  __Be patient, and allow up to 20 minutes.  You generally only ever have to do this once.__
+In router's case, this step carries out some extensive dependency management using go modules within the containerized development environment.  Because the router leverages the Kubernetes API, which in turn has in excess of one hundred dependencies, this step can take quite some time.  __Be patient, and allow up to 20 minutes.  You generally only ever have to do this once.__
 
 
 #### To build:
