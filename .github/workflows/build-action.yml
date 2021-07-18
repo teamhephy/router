@@ -1,0 +1,45 @@
+name: build
+# This workflow is triggered on pushes to the repository.
+on: [push, pull_request]
+
+jobs:
+  build:
+    name: build-job
+    runs-on: ubuntu-latest
+    steps:
+    - name: Notify Slack Start
+      uses: voxmedia/github-action-slack-notify-build@v1
+      with:
+        channel: ci
+        status: STARTED
+        color: good
+      env:
+        SLACK_BOT_TOKEN: ${{ secrets.SLACK_NOTIFICATIONS_BOT_TOKEN }
+    - name: Install Go 1.16.x
+      uses: actions/setup-go@v2
+      with:
+        go-version: 1.16.x
+    - name: Checkout repo
+      uses: actions/checkout@v2
+    - name: Test
+      run: make test
+    - name: Docker Build
+      run: make docker-build
+    - name: Notify Slack Success
+      if: success()
+      env:
+        SLACK_BOT_TOKEN: ${{ secrets.SLACK_NOTIFICATIONS_BOT_TOKEN }}
+      uses: voxmedia/github-action-slack-notify-build@v1
+      with:
+        channel: ci
+        status: SUCCESS
+        color: good
+    - name: Notify Slack Fail
+      if: failure()
+      env:
+        SLACK_BOT_TOKEN: ${{ secrets.SLACK_NOTIFICATIONS_BOT_TOKEN }}
+      uses: voxmedia/github-action-slack-notify-build@v1
+      with:
+        channel: ci
+        status: FAILED
+        color: danger
