@@ -1,6 +1,8 @@
 name: build
 # This workflow is triggered on pushes to the repository.
 on: [push, pull_request]
+env:
+  SLACK_BOT_TOKEN: ${{ secrets.SLACK_NOTIFICATIONS_BOT_TOKEN }}
 
 jobs:
   build:
