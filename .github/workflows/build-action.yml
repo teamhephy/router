@@ -8,6 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Slack Notify Build
+      continue-on-error: true
       uses: voxmedia/github-action-slack-notify-build@v1.1.2
       id: slack
       with:
@@ -27,6 +28,7 @@ jobs:
     - name: Docker Build
       run: make docker-build
     - name: Notify Slack Success
+      continue-on-error: true
       if: success()
       env:
         SLACK_BOT_TOKEN: ${{ secrets.SLACK_NOTIFICATIONS_BOT_TOKEN }}
@@ -37,6 +39,7 @@ jobs:
         status: SUCCESS
         color: good
     - name: Notify Slack Fail
+      continue-on-error: true
       if: failure()
       env:
         SLACK_BOT_TOKEN: ${{ secrets.SLACK_NOTIFICATIONS_BOT_TOKEN }}
