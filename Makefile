@@ -12,7 +12,7 @@ REPO_PATH := github.com/teamhephy/${SHORT_NAME}
 
 # The following variables describe the containerized development environment
 # and other build options
-DEV_ENV_IMAGE := hephy/go-dev:v1.28.3
+DEV_ENV_IMAGE := hephy/go-dev:v1.33.3
 DEV_ENV_WORK_DIR := /go/src/${REPO_PATH}
 DEV_ENV_CMD := docker run --rm -v ${CURDIR}:${DEV_ENV_WORK_DIR} -w ${DEV_ENV_WORK_DIR} ${DEV_ENV_IMAGE}
 DEV_ENV_CMD_INT := docker run -it --rm -v ${CURDIR}:${DEV_ENV_WORK_DIR} -w ${DEV_ENV_WORK_DIR} ${DEV_ENV_IMAGE}
@@ -37,8 +37,11 @@ dev: check-docker
 	${DEV_ENV_CMD_INT} bash
 
 # Containerized dependency resolution
-bootstrap: check-docker
-	${DEV_ENV_CMD} glide install
+vendor: check-docker
+	${DEV_ENV_CMD} go mod vendor
+
+tidy:
+	${DEV_ENV_CMD} go mod tidy -v
 
 # Containerized build of the binary
 build: check-docker
