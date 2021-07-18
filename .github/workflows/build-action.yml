@@ -7,8 +7,8 @@ jobs:
     name: build-job
     runs-on: ubuntu-latest
     steps:
-    - name: Notify Slack Start
-      uses: voxmedia/github-action-slack-notify-build@v1
+    - name: Slack Notify Build
+      uses: voxmedia/github-action-slack-notify-build@v1.1.2
       with:
         channel: ci
         status: STARTED
@@ -29,7 +29,7 @@ jobs:
       if: success()
       env:
         SLACK_BOT_TOKEN: ${{ secrets.SLACK_NOTIFICATIONS_BOT_TOKEN }}
-      uses: voxmedia/github-action-slack-notify-build@v1
+      uses: voxmedia/github-action-slack-notify-build@v1.1.2
       with:
         channel: ci
         status: SUCCESS
@@ -38,7 +38,7 @@ jobs:
       if: failure()
       env:
         SLACK_BOT_TOKEN: ${{ secrets.SLACK_NOTIFICATIONS_BOT_TOKEN }}
-      uses: voxmedia/github-action-slack-notify-build@v1
+      uses: voxmedia/github-action-slack-notify-build@v1.1.2
       with:
         channel: ci
         status: FAILED
