@@ -22,7 +22,7 @@ jobs:
     - name: Checkout repo
       uses: actions/checkout@v2
     - name: Test
-      run: make test
+      run: make vendor && make test
     - name: Docker Build
       run: make docker-build
     - name: Notify Slack Success
