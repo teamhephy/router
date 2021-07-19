@@ -3,6 +3,8 @@ FROM hephy/base:v0.5.0 as modsecurity
 COPY /bin /bin
 WORKDIR /tmp/build
 
+ENV DEBIAN_FRONTEND=noninteractive
+
 RUN set -x && \
     apt-get update && \
     apt-get install -y --no-install-recommends \
@@ -38,7 +40,8 @@ WORKDIR /tmp/build
 
 RUN set -x && \
     apt-get update && \
-    apt-get install -y --no-install-recommends \
+    ln -fs /usr/share/zoneinfo/Etc/UTC /etc/localtime && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
         build-essential fakeroot devscripts equivs
 
 RUN set -x && \
@@ -98,7 +101,8 @@ RUN set -x && \
     runtimeDeps='ca-certificates libcurl4 libxml2 libpcre3 libgeoip1 libmaxminddb0 libfuzzy2 libssl1.1 openssl libyajl2' && \
     echo 'deb [trusted=yes] file:/usr/local/repo ./' >> /etc/apt/sources.list && \
     apt-get update && \
-    apt-get install -y --no-install-recommends \
+    ln -fs /usr/share/zoneinfo/Etc/UTC /etc/localtime && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
         $buildDeps \
         $runtimeDeps && \
     export NGINX_VERSION=1.18.0 SIGNING_KEY=B0F4253373F8F6F510D42178520A9993A1C052F8 \
@@ -190,7 +194,9 @@ RUN set -x && \
         /usr/lib/x86_64-linux-gnu/gconv/IBM* \
         /usr/lib/x86_64-linux-gnu/gconv/EBC*
 
-COPY . /
+COPY opt/. /opt/.
+COPY bin/. /bin/.
+COPY www/. /www/.
 
 # Fix some permissions since we'll be running as a non-root user
 RUN chown -R router:router /opt/router /var/log
