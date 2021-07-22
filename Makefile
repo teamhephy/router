@@ -49,7 +49,7 @@ build: check-docker
 	${DEV_ENV_CMD} make binary-build
 
 docker-build: build check-docker
-	docker build ${DOCKER_BUILD_FLAGS} -t ${IMAGE} rootfs
+	DOCKER_BUILDKIT=1 docker build ${DOCKER_BUILD_FLAGS} -t ${IMAGE} rootfs
 	docker tag ${IMAGE} ${MUTABLE_IMAGE}
 
 # Builds the binary-- this should only be executed within the
