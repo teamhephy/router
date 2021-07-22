@@ -6,6 +6,8 @@ WORKDIR /tmp/build
 ENV DEBIAN_FRONTEND=noninteractive
 
 RUN set -x && \
+    apt-get autoremove -y && \
+    apt-get clean -y && \
     apt-get update && \
     apt-get install -y --no-install-recommends \
         g++ make \
@@ -16,8 +18,8 @@ RUN set -x && \
         libpcre3-dev \
         libmaxminddb-dev \
         libfuzzy-dev && \
-    export MOD_SECURITY_VERSION=3.0.4 BUILD_PATH=$PWD PREFIX=/usr/local && \
-    get_src b4231177dd80b4e076b228e57d498670113b69d445bab86db25f65346c24db22 \
+    export MOD_SECURITY_VERSION=3.0.5 BUILD_PATH=$PWD PREFIX=/usr/local && \
+    get_src 751bf95a7a8d39c440d0c26ec1f73961550ca2eb2ac9e2e7a56dce2dd7b959e9 \
             "https://github.com/SpiderLabs/ModSecurity/releases/download/v$MOD_SECURITY_VERSION/modsecurity-v$MOD_SECURITY_VERSION.tar.gz" && \
     cd "$BUILD_PATH/modsecurity-v$MOD_SECURITY_VERSION" && \
     ldconfig && \
@@ -31,7 +33,11 @@ RUN set -x && \
     make install-strip && \
     install -D -m 644 -t "$PREFIX/share/modsecurity" \
         unicode.mapping \
-        modsecurity.conf-recommended
+        modsecurity.conf-recommended && \
+    # cleanup
+    apt-get purge -y --auto-remove $buildDeps && \
+    apt-get autoremove -y && \
+    apt-get clean -y
 
 FROM hephy/base:v0.5.0 as openssl
 
@@ -80,7 +86,10 @@ RUN set -x && \
     cd .. && \
     dpkg-scanpackages . > Packages && \
     mkdir ../repo && \
-    mv Packages *.deb ../repo
+    mv Packages *.deb ../repo && \
+    # cleanup
+    apt-get autoremove -y && \
+    apt-get clean -y
 
 FROM hephy/base:v0.5.0
 
@@ -108,8 +117,8 @@ RUN set -x && \
     export NGINX_VERSION=1.20.1 SIGNING_KEY=B0F4253373F8F6F510D42178520A9993A1C052F8 \
            CLOUDFLARE_ZLIB_VERSION=372bcd151c901418c2721232bf09dc9cdbebafb5 \
            VTS_VERSION=0.1.18 GEOIP2_VERSION=3.3 \
-           MOD_SECURITY_NGINX_VERSION=e50e43ee4cc87565922ed98b1b6c72751019c326 \
-           OWASP_MOD_SECURITY_CRS_VERSION=cf57fd53de06b87b90d2cc5d61d602df81b2dd70 \
+           MOD_SECURITY_NGINX_VERSION=1.0.2 \
+           OWASP_MOD_SECURITY_CRS_VERSION=3.3.2 \
            BUILD_PATH=/tmp/build PREFIX=/opt/router && \
     ldconfig && \
     rm -rf "$PREFIX" && \
@@ -126,8 +135,8 @@ RUN set -x && \
             "https://github.com/vozlt/nginx-module-vts/archive/v$VTS_VERSION.tar.gz" && \
     get_src 41378438c833e313a18869d0c4a72704b4835c30acaf7fd68013ab6732ff78a7 \
             "https://github.com/leev/ngx_http_geoip2_module/archive/$GEOIP2_VERSION.tar.gz" && \
-    get_src a2e5a6950616ae68ba960f83d45830de9349ea06b5bb9fcf9dda0af453ec747b \
-            "https://github.com/SpiderLabs/ModSecurity-nginx/archive/$MOD_SECURITY_NGINX_VERSION.tar.gz" && \
+    get_src f8d3ff15520df736c5e20e91d5852ec27e0874566c2afce7dcb979e2298d6980 \
+            "https://github.com/SpiderLabs/ModSecurity-nginx/archive/v$MOD_SECURITY_NGINX_VERSION.tar.gz" && \
     cd "$BUILD_PATH/zlib-$CLOUDFLARE_ZLIB_VERSION" && \
     make -f Makefile.in distclean && \
     cd "$BUILD_PATH/nginx-$NGINX_VERSION" && \
@@ -160,10 +169,10 @@ RUN set -x && \
     strip -s "$PREFIX/sbin/nginx" "$PREFIX/modules/"*.so && \
     cd "$BUILD_PATH" && \
     # setup the modsecurity config and OWASP rules
-    get_src ab86c1dede7873f7bdc3c882f60b5b06bd0798ab555d7275b178ac6e104c909e \
-            "https://github.com/SpiderLabs/owasp-modsecurity-crs/archive/$OWASP_MOD_SECURITY_CRS_VERSION.tar.gz" && \
-    cp -R owasp-modsecurity-crs-$OWASP_MOD_SECURITY_CRS_VERSION/rules $PREFIX/conf/ && \
-    cp owasp-modsecurity-crs-$OWASP_MOD_SECURITY_CRS_VERSION/crs-setup.conf.example $PREFIX/conf/crs-setup.conf && \
+    get_src 56ddb33a5d0413f43157e1ea22415adf75d8b12219c43156861fd11708c8033e \
+            "https://github.com/coreruleset/coreruleset/archive/refs/tags/v$OWASP_MOD_SECURITY_CRS_VERSION.tar.gz" && \
+    cp -R coreruleset-$OWASP_MOD_SECURITY_CRS_VERSION/rules $PREFIX/conf/ && \
+    cp coreruleset-$OWASP_MOD_SECURITY_CRS_VERSION/crs-setup.conf.example $PREFIX/conf/crs-setup.conf && \
     cp /usr/local/share/modsecurity/unicode.mapping "$PREFIX/conf/" && \
     sed -e 's/^SecRuleEngine DetectionOnly/SecRuleEngine On/' \
         -e '$ a # Load OWASP Core Rule Set' \
@@ -194,8 +203,8 @@ RUN set -x && \
         /usr/lib/x86_64-linux-gnu/gconv/IBM* \
         /usr/lib/x86_64-linux-gnu/gconv/EBC*
 
-COPY opt/. /opt/.
 COPY bin/. /bin/.
+COPY opt/. /opt/.
 COPY www/. /www/.
 
 # Fix some permissions since we'll be running as a non-root user
