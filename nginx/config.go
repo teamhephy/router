@@ -158,10 +158,6 @@ http {
 			return 200;
 		}
 
-		# set header size limits
-		{{ if $routerConfig.HTTP2Enabled }} http2_max_header_size {{ $routerConfig.HTTP2MaxHeaderSize }}; {{ end }}
-		{{ if $routerConfig.HTTP2Enabled }} http2_max_field_size  {{ $routerConfig.HTTP2MaxFieldSize }};  {{ end }}
-
 		location / {
 			proxy_buffering {{ if $routerConfig.ProxyBuffersConfig.Enabled }}on{{ else }}off{{ end }};
 			proxy_buffer_size {{ $routerConfig.ProxyBuffersConfig.Size }};
@@ -185,10 +181,6 @@ http {
 	server {
 		listen 8080 default_server reuseport{{ if $routerConfig.UseProxyProtocol }} proxy_protocol{{ end }};
 		listen 6443 default_server ssl {{ if $routerConfig.HTTP2Enabled }}http2{{ end }} {{ if $routerConfig.UseProxyProtocol }}proxy_protocol{{ end }};
-
-		# set header size limits
-		{{ if $routerConfig.HTTP2Enabled }} http2_max_header_size {{ $routerConfig.HTTP2MaxHeaderSize }}; {{ end }}
-		{{ if $routerConfig.HTTP2Enabled }} http2_max_field_size  {{ $routerConfig.HTTP2MaxFieldSize }};  {{ end }}
 
 		set $app_name "router-default-vhost";
 		ssl_protocols {{ $sslConfig.Protocols }};
@@ -260,10 +252,6 @@ http {
 		modsecurity on;
 		modsecurity_rules_file /opt/router/conf/modsecurity.conf;
 		{{- end }}
-
-		# set header size limits
-		{{ if $routerConfig.HTTP2Enabled }} http2_max_header_size {{ $routerConfig.HTTP2MaxHeaderSize }}; {{ end }}
-		{{ if $routerConfig.HTTP2Enabled }} http2_max_field_size  {{ $routerConfig.HTTP2MaxFieldSize }};  {{ end }}
 
 		{{ if index $appConfig.Certificates $domain }}
 		listen 6443 ssl {{ if $routerConfig.HTTP2Enabled }}http2{{ end }} {{ if $routerConfig.UseProxyProtocol }}proxy_protocol{{ end }};
