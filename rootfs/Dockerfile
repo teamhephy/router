@@ -51,14 +51,14 @@ RUN set -x && \
         build-essential fakeroot devscripts equivs
 
 RUN set -x && \
-    export OPENSSL_VERSION=1.1.1k OPENSSL_VERSION_DEB=1.1.1k-1 BUILD_PATH=$PWD DEBEMAIL="Team Hephy <team@teamhephy.com>" && \
-    get_src_file b070d0422d0d666eaef5ca86b69b59e15eee8287de8183b2375ca28e038adbf1 \
+    export OPENSSL_VERSION=1.1.1l OPENSSL_VERSION_DEB=1.1.1l-1 BUILD_PATH=$PWD DEBEMAIL="Team Hephy <team@teamhephy.com>" && \
+    get_src_file ad1ba49cef4a57ddd134368b79d9fc170122f00c9b6956e177ddf06a6dc86ad9 \
                  http://deb.debian.org/debian/pool/main/o/openssl/openssl_$OPENSSL_VERSION_DEB.dsc && \
-    get_src_file 892a0875b9872acd04a9fde79b1f943075d5ea162415de3047c327df33fbaee5 \
+    get_src_file 0b7a3e5e59c34827fe0c3a74b7ec8baef302b98fa80088d7f9153aa16fa76bd1 \
                  http://deb.debian.org/debian/pool/main/o/openssl/openssl_$OPENSSL_VERSION.orig.tar.gz && \
-    get_src_file addeaa197444a62c6063d7f819512c2c22b42141dec9d8ec3bff7e4518e1d1c9 \
+    get_src_file e2ae0ea526223843245dd80224b19a55283f4910dd56b7ee7b23187164f69fda \
                  http://deb.debian.org/debian/pool/main/o/openssl/openssl_$OPENSSL_VERSION.orig.tar.gz.asc && \
-    get_src_file 7563beb68e87bae24369dfd7569ded77ee1bc22d0d890b94c85581dc86714fa1 \
+    get_src_file 0738932c86bcca51a17d6a0a840839db192bb8a0e036470fcf6fa4119fb20cd4 \
                  http://deb.debian.org/debian/pool/main/o/openssl/openssl_$OPENSSL_VERSION_DEB.debian.tar.xz && \
     dpkg-source -x openssl_$OPENSSL_VERSION_DEB.dsc && \
     # ChaCha20-Poly1305 Draft Support for older Android versions
