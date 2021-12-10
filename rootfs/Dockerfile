@@ -201,14 +201,13 @@ RUN set -x && \
         /lib/lsb \
         /lib/udev \
         /usr/lib/x86_64-linux-gnu/gconv/IBM* \
-        /usr/lib/x86_64-linux-gnu/gconv/EBC*
+        /usr/lib/x86_64-linux-gnu/gconv/EBC* && \
+    # Fix some permissions since we'll be running as a non-root user
+    chown -R router:router /opt/router /var/log
 
 COPY bin/. /bin/.
-COPY opt/. /opt/.
+COPY --chown=router:router opt/. /opt/.
 COPY www/. /www/.
-
-# Fix some permissions since we'll be running as a non-root user
-RUN chown -R router:router /opt/router /var/log
 
 USER router
 
