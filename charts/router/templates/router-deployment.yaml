@@ -28,6 +28,10 @@ spec:
       labels:
         app: deis-router
     spec:
+{{- with .Values.global.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+{{- end }}
       serviceAccount: deis-router
       containers:
       - name: deis-router
