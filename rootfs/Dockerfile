@@ -114,10 +114,10 @@ RUN set -x && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
         $buildDeps \
         $runtimeDeps && \
-    export NGINX_VERSION=1.20.1 SIGNING_KEY=B0F4253373F8F6F510D42178520A9993A1C052F8 \
+    export NGINX_VERSION=1.22.1 SIGNING_KEY=13C82A63B603576156E30A4EA0EA981B66B0D967 \
            CLOUDFLARE_ZLIB_VERSION=372bcd151c901418c2721232bf09dc9cdbebafb5 \
            VTS_VERSION=0.1.18 GEOIP2_VERSION=3.3 \
-           MOD_SECURITY_NGINX_VERSION=1.0.2 \
+           MOD_SECURITY_NGINX_VERSION=1.0.3 \
            OWASP_MOD_SECURITY_CRS_VERSION=3.3.2 \
            BUILD_PATH=/tmp/build PREFIX=/opt/router && \
     ldconfig && \
@@ -135,7 +135,7 @@ RUN set -x && \
             "https://github.com/vozlt/nginx-module-vts/archive/v$VTS_VERSION.tar.gz" && \
     get_src 41378438c833e313a18869d0c4a72704b4835c30acaf7fd68013ab6732ff78a7 \
             "https://github.com/leev/ngx_http_geoip2_module/archive/$GEOIP2_VERSION.tar.gz" && \
-    get_src f8d3ff15520df736c5e20e91d5852ec27e0874566c2afce7dcb979e2298d6980 \
+    get_src 32a42256616cc674dca24c8654397390adff15b888b77eb74e0687f023c8751b \
             "https://github.com/SpiderLabs/ModSecurity-nginx/archive/v$MOD_SECURITY_NGINX_VERSION.tar.gz" && \
     cd "$BUILD_PATH/zlib-$CLOUDFLARE_ZLIB_VERSION" && \
     make -f Makefile.in distclean && \
