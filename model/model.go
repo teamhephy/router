@@ -220,16 +220,9 @@ type SSLConfig struct {
 func newSSLConfig() *SSLConfig {
 	return &SSLConfig{
 		Enforce:   false,
-		Protocols: "TLSv1 TLSv1.1 TLSv1.2 TLSv1.3",
-		// Default cipher suite:
-		//  - Prefer 128-Bit over 256-Bit encryptions (lower overhead)
-		//  - Prefer GCM over EDH over RSA auth (for Forward Secrecy)
-		//  - Fallback to 112-Bit 3DES (mainly for IE 8 compatibility)
-		//  - Let clients choose between AES128-GCM and ChaCha20-Poly1305
-		// Compatible: Firefox 1, Chrome 1, IE 7, Opera 5, Safari 1, Windows XP IE8, Android 2.3, Java 7
-		// Incompatible: Windows XP IE6, Java 6
-		// Source: https://wiki.mozilla.org/Security/Server_Side_TLS (old backward compatibility)
-		Ciphers:           "[TLS_AES_128_GCM_SHA256|TLS_CHACHA20_POLY1305_SHA256]:TLS_AES_256_GCM_SHA384:[ECDHE-ECDSA-AES128-GCM-SHA256|ECDHE-ECDSA-CHACHA20-POLY1305|ECDHE-ECDSA-CHACHA20-POLY1305-OLD]:[ECDHE-RSA-AES128-GCM-SHA256|ECDHE-RSA-CHACHA20-POLY1305|ECDHE-RSA-CHACHA20-POLY1305-OLD]:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA:ECDHE-RSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA:DHE-RSA-AES256-SHA256:DHE-RSA-AES256-SHA:ECDHE-ECDSA-DES-CBC3-SHA:ECDHE-RSA-DES-CBC3-SHA:EDH-RSA-DES-CBC3-SHA:AES128-GCM-SHA256:AES256-GCM-SHA384:AES128-SHA256:AES256-SHA256:AES128-SHA:AES256-SHA:DES-CBC3-SHA",
+		Protocols: "TLSv1.2 TLSv1.3",
+		// Source: https://ssl-config.mozilla.org/#server=nginx&version=1.22.1&config=intermediate&openssl=1.1.1n&hsts=false&ocsp=false&guideline=5.6
+		Ciphers:           "ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384",
 		SessionTimeout:    "10m",
 		UseSessionTickets: true,
 		BufferSize:        "4k",

@@ -51,36 +51,22 @@ RUN set -x && \
         build-essential fakeroot devscripts equivs
 
 RUN set -x && \
-    export OPENSSL_VERSION=1.1.1l OPENSSL_VERSION_DEB=1.1.1l-1 BUILD_PATH=$PWD DEBEMAIL="Team Hephy <team@teamhephy.com>" && \
-    get_src_file ad1ba49cef4a57ddd134368b79d9fc170122f00c9b6956e177ddf06a6dc86ad9 \
+    export OPENSSL_VERSION=1.1.1n OPENSSL_VERSION_DEB=1.1.1n-0+deb11u3 BUILD_PATH=$PWD DEBEMAIL="Team Hephy <team@teamhephy.com>" && \
+    get_src_file cbf06993d1dc8c4e59e2f7f0456cc07a005c17274a33eb29135e9fdd7f6b2941 \
                  http://deb.debian.org/debian/pool/main/o/openssl/openssl_$OPENSSL_VERSION_DEB.dsc && \
-    get_src_file 0b7a3e5e59c34827fe0c3a74b7ec8baef302b98fa80088d7f9153aa16fa76bd1 \
+    get_src_file 40dceb51a4f6a5275bde0e6bf20ef4b91bfc32ed57c0552e2e8e15463372b17a \
                  http://deb.debian.org/debian/pool/main/o/openssl/openssl_$OPENSSL_VERSION.orig.tar.gz && \
-    get_src_file e2ae0ea526223843245dd80224b19a55283f4910dd56b7ee7b23187164f69fda \
+    get_src_file e0e89e9467102880ee6f2ee8c1413933eb1268969afb97b9bec61e2190a62fd0 \
                  http://deb.debian.org/debian/pool/main/o/openssl/openssl_$OPENSSL_VERSION.orig.tar.gz.asc && \
-    get_src_file 0738932c86bcca51a17d6a0a840839db192bb8a0e036470fcf6fa4119fb20cd4 \
+    get_src_file 0eed2dc1f8d472291511f386fc0a3c5fe70ec50440b1c252fd99934bf2cddd4a \
                  http://deb.debian.org/debian/pool/main/o/openssl/openssl_$OPENSSL_VERSION_DEB.debian.tar.xz && \
     dpkg-source -x openssl_$OPENSSL_VERSION_DEB.dsc && \
-    # ChaCha20-Poly1305 Draft Support for older Android versions
-    get_src_file 8d3e4e89a957ad8678c5f403f0969abeffc3fe96507b648cd87227bd835c3c30 \
-                 https://raw.githubusercontent.com/hakasenyang/openssl-patch/1b03526/openssl-1.1.1i-chacha_draft.patch && \
-    # Allow setting equal preference and TLSv1.3 ciphers in NGINX
-    get_src_file 04f682c36405a908247c27e317fb0f5f5bb19cbac9699f5afa21fd81511e6be2 \
-                 https://raw.githubusercontent.com/hakasenyang/openssl-patch/e3bd4a8/openssl-equal-1.1.1e-dev_ciphers.patch && \
     cd "$BUILD_PATH/openssl-$OPENSSL_VERSION" && \
     sed -i '/^Build-Depends:/ s/ debhelper-compat (= 12)/ debhelper-compat (= 11)/' debian/control && \
     dch -l hephy "Fix build deps for Ubuntu Bionic" && \
     mk-build-deps -i -t "apt-get -y --no-install-recommends" && \
     sed -i '/^CONFARGS\s*=/ s/ enable-unit-test//' debian/rules && \
     dch -l hephy "Disable unit tests" && \
-    sed -i '/^CONFARGS\s*=/ s/$/ enable-weak-ssl-ciphers/' debian/rules && \
-    dch -l hephy "Enable weak SSL ciphers" && \
-    cp "$BUILD_PATH/openssl-equal-1.1.1e-dev_ciphers.patch" debian/patches/ && \
-    echo openssl-equal-1.1.1e-dev_ciphers.patch >> debian/patches/series && \
-    dch -l hephy "Add BoringSSL port of equal preference cipher groups" && \
-    cp "$BUILD_PATH/openssl-1.1.1i-chacha_draft.patch" debian/patches/ && \
-    echo openssl-1.1.1i-chacha_draft.patch >> debian/patches/series && \
-    dch -l hephy "Add ChaCha-Draft cipher support" && \
     dch -r " " && \
     DEB_BUILD_OPTIONS=nocheck dpkg-buildpackage -uc -b -rfakeroot && \
     cd .. && \
