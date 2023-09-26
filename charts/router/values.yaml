@@ -7,9 +7,9 @@ dhparam: ""
 # limits_memory: "50Mi"
 # requests_cpu: "100m"
 # requests_memory: "50Mi"
-# rate_limit:
-#   qps: "50.0"
-#   burst: "50"
+rate_limit: {}
+#  qps: "50.0"
+#  burst: "50"
 
 # Any custom router annotations(https://github.com/teamhephy/router#annotations)
 # which need to be applied can be specified as key-value pairs under "deployment_annotations"
