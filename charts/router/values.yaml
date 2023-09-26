@@ -1,6 +1,6 @@
 org: "hephy"
-pull_policy: "Always"
-docker_tag: canary
+pull_policy: "IfNotPresent"
+docker_tag: v2.19.0
 platform_domain: ""
 dhparam: ""
 # limits_cpu: "100m"

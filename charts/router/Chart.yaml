@@ -1,6 +1,6 @@
 name: router
 home: https://github.com/teamhephy/router
-version: <Will be populated by the ci before publishing the chart>
+version: 2.19.1
 description: Edge router for Hephy Workflow.
 maintainers:
   - email: team@teamhephy.com
