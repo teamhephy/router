@@ -1,4 +1,4 @@
-{{- if not .Values.global.experimental_native_ingress }}
+{{- if not .Values.global.use_native_ingress }}
 apiVersion: v1
 kind: Service
 metadata:
@@ -27,4 +27,4 @@ spec:
     - name: healthz
       port: 9090
       targetPort: 9090
-{{ end }}{{/* if not .Values.global.experimental_native_ingress */}}
+{{ end }}{{/* if not .Values.global.use_native_ingress */}}

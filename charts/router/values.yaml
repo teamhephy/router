@@ -1,15 +1,15 @@
 org: "hephy"
-pull_policy: "Always"
-docker_tag: canary
+pull_policy: "IfNotPresent"
+docker_tag: v2.19.0
 platform_domain: ""
 dhparam: ""
 # limits_cpu: "100m"
 # limits_memory: "50Mi"
 # requests_cpu: "100m"
 # requests_memory: "50Mi"
-# rate_limit:
-#   qps: "50.0"
-#   burst: "50"
+rate_limit: {}
+#  qps: "50.0"
+#  burst: "50"
 
 # Any custom router annotations(https://github.com/teamhephy/router#annotations)
 # which need to be applied can be specified as key-value pairs under "deployment_annotations"
@@ -34,6 +34,6 @@ global:
   # Valid values are:
   # - true: The Deis router will NOT be deployed. Inherently workflow will not be usable until a Kubernetes ingress controller is installed.
   # - false: The default mode, and the default behavior of Deis workflow.
-  experimental_native_ingress: false
+  use_native_ingress: false
   # Role-Based Access Control for Kubernetes >= 1.5
   use_rbac: false
